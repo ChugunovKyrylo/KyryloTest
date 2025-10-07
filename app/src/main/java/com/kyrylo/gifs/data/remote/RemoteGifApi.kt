@@ -10,9 +10,9 @@ interface RemoteGifApi {
         @Query("q")
         query: String,
         @Query("limit")
-        limit: Int = 25,
+        limit: Int,
         @Query("offset")
-        offset: Int = 0,
+        offset: Int,
         @Query("rating")
         r: String = "g",
         @Query("lang")
