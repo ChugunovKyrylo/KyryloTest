@@ -10,13 +10,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,21 +33,41 @@ import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
+import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.kyrylo.gifs.DataResult
 import com.kyrylo.gifs.R
-import com.kyrylo.gifs.data.remote.GifResponse
+import com.kyrylo.gifs.ui.grid.models.GifElementUI
+import com.kyrylo.gifs.ui.grid.models.GridStateUI
 
 @Composable
 fun GridScreen() {
     val viewmodel: GridViewModel = hiltViewModel()
     val state by viewmodel.state.collectAsState()
 
-    var query: String by remember(state.query) {
+    when(val currentState = state) {
+        null -> {
+            Box(contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        else -> {
+            GridStateScreen(
+                state = currentState,
+                onChangeQuery = viewmodel::onChangeQuery,
+                onRequestPaging = viewmodel::requestPaging
+            )
+        }
+    }
+}
+
+@Composable
+private fun GridStateScreen(state: GridStateUI, onChangeQuery: (String) -> Unit, onRequestPaging: () -> Unit) {
+    var query: String by remember {
         mutableStateOf(state.query)
     }
-
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -54,63 +75,41 @@ fun GridScreen() {
             value = query,
             onValueChange = {
                 query = it
-                viewmodel.onChangeQuery(it)
+                onChangeQuery(it)
             },
             modifier = Modifier.fillMaxWidth()
         )
-        when (val currentGifs = state.gifs) {
-            is DataResult.Empty<List<GifResponse>> -> EmptyCurrentGifsView()
-            is DataResult.Error<List<GifResponse>> -> ErrorCurrentGifsView()
-            is DataResult.Received<List<GifResponse>> -> ReceivedCurrentGifsView(
-                gifs = currentGifs.data,
-                itemsToPaging = state.itemsToPaging,
-                paging = state.paging,
-                onRequestPaging = viewmodel::requestPaging
+        when{
+            state.isEmptyGifs() -> EmptyGifsView()
+            else -> GifListView(
+                state = state,
+                onRequestPaging = onRequestPaging
             )
         }
     }
-
 }
 
 @Composable
-private fun ReceivedCurrentGifsView(
-    gifs: List<GifResponse>,
-    itemsToPaging: Int,
-    paging: Boolean,
+private fun GifListView(
+    state: GridStateUI,
     onRequestPaging: () -> Unit
 ) {
-    val context = LocalContext.current
+    val gifs = remember(state.gifs) {
+        mutableStateListOf(*state.gifs.toTypedArray())
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        itemsIndexed(items = gifs) { index, item ->
-            if (index == gifs.lastIndex - itemsToPaging) {
+        items(items = gifs, key = { gif -> gif.id }) { item ->
+            if (item.id >= gifs.lastIndex - state.itemsToPaging) {
                 onRequestPaging()
             }
-            val loader = ImageLoader.Builder(context)
-                .components {
-                    if (SDK_INT >= 28) {
-                        add(AnimatedImageDecoder.Factory())
-                    } else {
-                        add(GifDecoder.Factory())
-                    }
-                }.build()
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(item.images.original.url)
-                    .crossfade(true)
-                    .build(),
-                error = painterResource(R.drawable.error_gif_loading),
-                placeholder = painterResource(R.drawable.placeholder_gif_loading),
-                imageLoader = loader,
-                contentDescription = null,
-                modifier = Modifier.size(200.dp)
-            )
+            GifItemView(item)
         }
-        if (paging) {
+        if (state.isProcessPaging) {
             item(span = { GridItemSpan(2) }) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -124,21 +123,40 @@ private fun ReceivedCurrentGifsView(
 }
 
 @Composable
-private fun ErrorCurrentGifsView() {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Text(
-            text = "Unexpected Error",
-            fontSize = 30.sp,
-            color = Color.Red
-        )
+private fun GifItemView(item: GifElementUI) {
+    val imageUrl by remember {
+        mutableStateOf(item.imageUrl)
     }
+    val context = LocalContext.current
+    val loader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                if (SDK_INT >= 28) {
+                    add(AnimatedImageDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }.build()
+    }
+    val request = remember {
+        ImageRequest.Builder(context)
+            .data(imageUrl)
+            .crossfade(true)
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .build()
+    }
+    AsyncImage(
+        model = request,
+        error = painterResource(R.drawable.error_gif_loading),
+        placeholder = painterResource(R.drawable.placeholder_gif_loading),
+        imageLoader = loader,
+        contentDescription = null,
+        modifier = Modifier.size(200.dp)
+    )
 }
 
 @Composable
-private fun EmptyCurrentGifsView() {
+private fun EmptyGifsView() {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxSize()

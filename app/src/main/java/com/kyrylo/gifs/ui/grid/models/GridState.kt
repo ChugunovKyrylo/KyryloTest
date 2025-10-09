@@ -1,6 +1,5 @@
-package com.kyrylo.gifs.ui.grid
+package com.kyrylo.gifs.ui.grid.models
 
-import com.kyrylo.gifs.DataResult
 import com.kyrylo.gifs.data.remote.GifResponse
 
 data class GridState(
@@ -8,6 +7,8 @@ data class GridState(
     val paging: Boolean = false,
     val currentPage: Int = 0,
     val pageSize: Int = 25,
-    val itemsToPaging: Int = 5,
-    val gifs: DataResult<List<GifResponse>> = DataResult.Empty()
+    val itemsToPaging: Int = 10,
+    val gifs: List<GifResponse> = emptyList(),
+    val error: Boolean = false,
+    val errorMessage: String? = ""
 )
