@@ -10,7 +10,7 @@ data class GiphyApiResponse(
     val meta: Meta,
 
     @SerializedName("pagination")
-    val pagination: Pagination
+    val pagination: Pagination?
 )
 
 data class Meta(
@@ -55,6 +55,7 @@ data class GifResponse(
     @SerializedName("import_datetime") val importDatetime: String,
     @SerializedName("trending_datetime") val trendingDatetime: String,
     val images: Images,
+    val user: User,
     @SerializedName("analytics_response_payload") val analyticsResponsePayload: String,
     val analytics: Analytics,
     @SerializedName("alt_text") val altText: String,
@@ -105,4 +106,34 @@ data class Analytics(
 
 data class AnalyticsEvent(
     val url: String
+)
+
+data class User(
+    @SerializedName("avatar_url")
+    val avatarUrl: String,
+
+    @SerializedName("banner_image")
+    val bannerImage: String,
+
+    @SerializedName("banner_url")
+    val bannerUrl: String,
+
+    @SerializedName("profile_url")
+    val profileUrl: String,
+
+    val username: String,
+
+    @SerializedName("display_name")
+    val displayName: String,
+
+    val description: String,
+
+    @SerializedName("instagram_url")
+    val instagramUrl: String,
+
+    @SerializedName("website_url")
+    val websiteUrl: String,
+
+    @SerializedName("is_verified")
+    val isVerified: Boolean
 )

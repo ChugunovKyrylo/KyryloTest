@@ -3,6 +3,8 @@ package com.kyrylo.gifs.data.repository
 import com.kyrylo.gifs.data.remote.GiphyApiResponse
 import com.kyrylo.gifs.data.remote.RemoteGifApi
 import com.kyrylo.gifs.domain.repository.GifsRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class GifsRepositoryImpl @Inject constructor(
@@ -13,8 +15,12 @@ class GifsRepositoryImpl @Inject constructor(
         query: String,
         pageSize: Int,
         offset: Int
-    ): GiphyApiResponse {
-        return remoteApi.getGifs(query, pageSize, offset)
+    ): GiphyApiResponse = withContext(Dispatchers.IO) {
+        return@withContext remoteApi.getGifs(query, pageSize, offset)
+    }
+
+    override suspend fun getGifById(id: String): GiphyApiResponse = withContext(Dispatchers.IO) {
+        return@withContext remoteApi.getGifById(id)
     }
 
 }

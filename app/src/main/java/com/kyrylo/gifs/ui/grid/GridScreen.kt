@@ -1,6 +1,7 @@
 package com.kyrylo.gifs.ui.grid
 
 import android.os.Build.VERSION.SDK_INT
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,34 +38,33 @@ import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.kyrylo.gifs.R
-import com.kyrylo.gifs.ui.grid.models.GifElementUI
-import com.kyrylo.gifs.ui.grid.models.GridStateUI
+import com.kyrylo.gifs.ui.grid.models.GridGifItemModel
+import com.kyrylo.gifs.ui.grid.models.GridState
 
 @Composable
-fun GridScreen() {
+fun GridScreen(onGifClicked: (String) -> Unit) {
     val viewmodel: GridViewModel = hiltViewModel()
     val state by viewmodel.state.collectAsState()
 
     when(val currentState = state) {
-        null -> {
-            Box(contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                CircularProgressIndicator()
-            }
-        }
         else -> {
             GridStateScreen(
                 state = currentState,
                 onChangeQuery = viewmodel::onChangeQuery,
-                onRequestPaging = viewmodel::requestPaging
+                onRequestPaging = viewmodel::requestPaging,
+                onGifClicked = onGifClicked
             )
         }
     }
 }
 
 @Composable
-private fun GridStateScreen(state: GridStateUI, onChangeQuery: (String) -> Unit, onRequestPaging: () -> Unit) {
+private fun GridStateScreen(
+    state: GridState,
+    onChangeQuery: (String) -> Unit,
+    onRequestPaging: () -> Unit,
+    onGifClicked: (String) -> Unit
+) {
     var query: String by remember {
         mutableStateOf(state.query)
     }
@@ -83,7 +83,8 @@ private fun GridStateScreen(state: GridStateUI, onChangeQuery: (String) -> Unit,
             state.isEmptyGifs() -> EmptyGifsView()
             else -> GifListView(
                 state = state,
-                onRequestPaging = onRequestPaging
+                onRequestPaging = onRequestPaging,
+                onGifClicked = onGifClicked
             )
         }
     }
@@ -91,8 +92,9 @@ private fun GridStateScreen(state: GridStateUI, onChangeQuery: (String) -> Unit,
 
 @Composable
 private fun GifListView(
-    state: GridStateUI,
-    onRequestPaging: () -> Unit
+    state: GridState,
+    onRequestPaging: () -> Unit,
+    onGifClicked: (String) -> Unit
 ) {
     val gifs = remember(state.gifs) {
         mutableStateListOf(*state.gifs.toTypedArray())
@@ -103,11 +105,11 @@ private fun GifListView(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(items = gifs, key = { gif -> gif.id }) { item ->
-            if (item.id >= gifs.lastIndex - state.itemsToPaging) {
+        items(items = gifs, key = { gif -> gif.order }) { item ->
+            if (item.order >= gifs.lastIndex - state.itemsToPaging) {
                 onRequestPaging()
             }
-            GifItemView(item)
+            GifItemView(item, onGifClicked)
         }
         if (state.isProcessPaging) {
             item(span = { GridItemSpan(2) }) {
@@ -123,7 +125,7 @@ private fun GifListView(
 }
 
 @Composable
-private fun GifItemView(item: GifElementUI) {
+private fun GifItemView(item: GridGifItemModel, onGifClicked: (String) -> Unit) {
     val imageUrl by remember {
         mutableStateOf(item.imageUrl)
     }
@@ -151,7 +153,7 @@ private fun GifItemView(item: GifElementUI) {
         placeholder = painterResource(R.drawable.placeholder_gif_loading),
         imageLoader = loader,
         contentDescription = null,
-        modifier = Modifier.size(200.dp)
+        modifier = Modifier.size(200.dp).clickable { onGifClicked(item.id) }
     )
 }
 

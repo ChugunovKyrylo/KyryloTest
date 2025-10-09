@@ -1,6 +1,6 @@
 package com.kyrylo.gifs.di
 
-import com.kyrylo.gifs.ui.grid.data.GridStateMapper
+import com.kyrylo.gifs.ui.grid.data.GridGifResponsesMapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,6 +13,6 @@ class GridModule {
 
     @Provides
     @ViewModelScoped
-    fun provideGridStateMapper(): GridStateMapper = GridStateMapper()
+    fun provideGridGifResponsesMapper(): GridGifResponsesMapper = GridGifResponsesMapper()
 
 }
