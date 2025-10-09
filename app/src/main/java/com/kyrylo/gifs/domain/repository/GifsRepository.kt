@@ -6,6 +6,4 @@ interface GifsRepository {
 
     suspend fun getGifs(query: String, pageSize: Int, offset: Int): GiphyApiResponse
 
-    suspend fun getGifById(id: String): GiphyApiResponse
-
 }

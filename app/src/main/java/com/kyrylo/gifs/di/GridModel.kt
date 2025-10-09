@@ -1,6 +1,6 @@
 package com.kyrylo.gifs.di
 
-import com.kyrylo.gifs.ui.grid.data.GridGifResponsesMapper
+import com.kyrylo.gifs.ui.mapper.GifResponseMapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -9,10 +9,10 @@ import dagger.hilt.android.scopes.ViewModelScoped
 
 @Module
 @InstallIn(ViewModelComponent::class)
-class GridModule {
+class GridModel {
 
     @Provides
     @ViewModelScoped
-    fun provideGridGifResponsesMapper(): GridGifResponsesMapper = GridGifResponsesMapper()
+    fun provideGifResponseMapper() = GifResponseMapper()
 
 }

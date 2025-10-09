@@ -3,8 +3,7 @@ package com.kyrylo.gifs.ui.grid
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kyrylo.gifs.domain.repository.GifsRepository
-import com.kyrylo.gifs.ui.grid.data.GridGifResponsesMapper
-import com.kyrylo.gifs.ui.grid.models.GridState
+import com.kyrylo.gifs.ui.mapper.GifResponseMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class GridViewModel @Inject constructor(
     private val repository: GifsRepository,
-    private val gridGifResponsesMapper: GridGifResponsesMapper
+    private val gridGifResponsesMapper: GifResponseMapper
 ) : ViewModel() {
 
     private var processPaging = false
@@ -33,7 +32,7 @@ class GridViewModel @Inject constructor(
                 .debounce(400)
                 .distinctUntilChanged()
                 .collectLatest { q ->
-                    _state.value = _state.value.copy(currentPage = 0)
+                    _state.value = _state.value.copy(currentPage = 0, gifs = emptyList())
                     loadQuery(q)
                 }
         }
@@ -43,9 +42,10 @@ class GridViewModel @Inject constructor(
         if (processPaging) return
         processPaging = true
         viewModelScope.launch {
-            val query = _state.value.query
-            val newCurrentPage = _state.value.currentPage + 1
-            _state.value = _state.value.copy(currentPage = newCurrentPage)
+            val state = _state.value
+            val query = state.query
+            val newCurrentPage = state.currentPage + 1
+            _state.value = state.copy(currentPage = newCurrentPage)
             loadQuery(query)
         }.invokeOnCompletion { processPaging = false }
     }

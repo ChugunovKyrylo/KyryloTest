@@ -1,13 +1,12 @@
 package com.kyrylo.gifs.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.kyrylo.gifs.ui.detail.DetailScreen
 import com.kyrylo.gifs.ui.grid.GridScreen
+import com.kyrylo.gifs.ui.models.GifModel
 
 @Composable
 fun AppNavigation() {
@@ -17,16 +16,19 @@ fun AppNavigation() {
         startDestination = "grid"
     ) {
         composable("grid") {
-            GridScreen { id ->
-                if(controller.currentDestination?.route == "grid") {
-                    controller.navigate(route = "details/${id}")
+            GridScreen { gifModel ->
+                if (controller.currentDestination?.route == "grid") {
+                    controller.currentBackStackEntry?.savedStateHandle?.set("gifModel", gifModel)
+                    controller.navigate(route = "details")
                 }
             }
         }
-        composable("details/{id}", arguments = listOf(
-            navArgument("id") { type = NavType.StringType }
-        )) {
-            DetailScreen()
+        composable("details") {
+            val gifModel =
+                controller.previousBackStackEntry?.savedStateHandle?.get<GifModel>("gifModel")
+            DetailScreen(gifModel) {
+                controller.popBackStack()
+            }
         }
     }
 }

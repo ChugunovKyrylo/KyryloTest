@@ -19,8 +19,4 @@ class GifsRepositoryImpl @Inject constructor(
         return@withContext remoteApi.getGifs(query, pageSize, offset)
     }
 
-    override suspend fun getGifById(id: String): GiphyApiResponse = withContext(Dispatchers.IO) {
-        return@withContext remoteApi.getGifById(id)
-    }
-
 }

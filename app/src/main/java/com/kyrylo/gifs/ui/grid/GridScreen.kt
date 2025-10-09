@@ -11,14 +11,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,15 +37,14 @@ import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.kyrylo.gifs.R
-import com.kyrylo.gifs.ui.grid.models.GridGifItemModel
-import com.kyrylo.gifs.ui.grid.models.GridState
+import com.kyrylo.gifs.ui.models.GifModel
 
 @Composable
-fun GridScreen(onGifClicked: (String) -> Unit) {
+fun GridScreen(onGifClicked: (GifModel) -> Unit) {
     val viewmodel: GridViewModel = hiltViewModel()
     val state by viewmodel.state.collectAsState()
 
-    when(val currentState = state) {
+    when (val currentState = state) {
         else -> {
             GridStateScreen(
                 state = currentState,
@@ -63,9 +61,9 @@ private fun GridStateScreen(
     state: GridState,
     onChangeQuery: (String) -> Unit,
     onRequestPaging: () -> Unit,
-    onGifClicked: (String) -> Unit
+    onGifClicked: (GifModel) -> Unit
 ) {
-    var query: String by remember {
+    var query: String by remember(state.query) {
         mutableStateOf(state.query)
     }
     Column(
@@ -79,7 +77,7 @@ private fun GridStateScreen(
             },
             modifier = Modifier.fillMaxWidth()
         )
-        when{
+        when {
             state.isEmptyGifs() -> EmptyGifsView()
             else -> GifListView(
                 state = state,
@@ -94,19 +92,16 @@ private fun GridStateScreen(
 private fun GifListView(
     state: GridState,
     onRequestPaging: () -> Unit,
-    onGifClicked: (String) -> Unit
+    onGifClicked: (GifModel) -> Unit
 ) {
-    val gifs = remember(state.gifs) {
-        mutableStateListOf(*state.gifs.toTypedArray())
-    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(items = gifs, key = { gif -> gif.order }) { item ->
-            if (item.order >= gifs.lastIndex - state.itemsToPaging) {
+        itemsIndexed(items = state.gifs, key = { index, gif -> gif.order }) { index, item ->
+            if (index >= state.gifs.lastIndex - state.itemsToPaging) {
                 onRequestPaging()
             }
             GifItemView(item, onGifClicked)
@@ -125,7 +120,7 @@ private fun GifListView(
 }
 
 @Composable
-private fun GifItemView(item: GridGifItemModel, onGifClicked: (String) -> Unit) {
+private fun GifItemView(item: GifModel, onGifClicked: (GifModel) -> Unit) {
     val imageUrl by remember {
         mutableStateOf(item.imageUrl)
     }
@@ -153,7 +148,9 @@ private fun GifItemView(item: GridGifItemModel, onGifClicked: (String) -> Unit) 
         placeholder = painterResource(R.drawable.placeholder_gif_loading),
         imageLoader = loader,
         contentDescription = null,
-        modifier = Modifier.size(200.dp).clickable { onGifClicked(item.id) }
+        modifier = Modifier
+            .size(200.dp)
+            .clickable { onGifClicked(item) }
     )
 }
 
