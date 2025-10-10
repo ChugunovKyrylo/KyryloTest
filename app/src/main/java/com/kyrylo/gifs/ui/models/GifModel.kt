@@ -8,4 +8,8 @@ class GifModel(
     val source: String,
     val order: Int,
     val id: String
-) : java.io.Serializable
+) : java.io.Serializable {
+
+    fun getKey() = "${order}/$id/${imageUrl}"
+
+}

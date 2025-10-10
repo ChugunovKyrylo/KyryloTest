@@ -8,14 +8,14 @@ import com.kyrylo.gifs.ui.models.UserModel
 class GifResponseMapper {
 
     fun map(responses: List<GifResponse>?): List<GifModel> {
-        return responses?.mapIndexed { index, response -> map(response, index) } ?: emptyList()
+        return responses?.mapIndexed { index, response -> map(response, index + 1) } ?: emptyList()
     }
 
-    fun map(response: GifResponse?, order: Int = 0): GifModel {
+    fun map(response: GifResponse?, order: Int): GifModel {
         return GifModel(
             user = mapUser(response?.user),
             title = response?.title ?: "",
-            imageUrl = response?.images?.original?.url ?: "",
+            imageUrl = response?.images?.fixedHeight?.url ?: "",
             description = response?.altText ?: "",
             source = response?.source ?: "",
             order = order,

@@ -20,7 +20,6 @@ class GridViewModel @Inject constructor(
     private val repository: GifsRepository,
     private val gridGifResponsesMapper: GifResponseMapper
 ) : ViewModel() {
-
     private var processPaging = false
 
     private val _state = MutableStateFlow(GridState())
@@ -56,21 +55,19 @@ class GridViewModel @Inject constructor(
 
     private suspend fun loadQuery(query: String) {
         try {
-            val state = _state.value
-            val pagingState = state.copy(isProcessPaging = true)
-            _state.value = pagingState
+            _state.value = _state.value.copy(isProcessPaging = true)
             if (query.isEmpty()) {
-                _state.value = pagingState.copy(gifs = emptyList(), isProcessPaging = false)
+                _state.value = _state.value.copy(gifs = emptyList(), isProcessPaging = false)
             } else {
-                val pageSize = state.pageSize
-                val page = state.currentPage
+                val pageSize = _state.value.pageSize
+                val page = _state.value.currentPage
                 val offset = page * pageSize
                 val response =
                     repository.getGifs(query = query, pageSize = pageSize, offset = offset)
                 val gridGifItemModels = gridGifResponsesMapper.map(response.data)
-                val newGifs = pagingState.gifs.toMutableList()
+                val newGifs = _state.value.gifs.toMutableList()
                 newGifs.addAll(gridGifItemModels)
-                _state.value = pagingState.copy(gifs = newGifs, isProcessPaging = false)
+                _state.value = _state.value.copy(gifs = newGifs, isProcessPaging = false)
             }
         } catch (e: CancellationException) {
             throw e

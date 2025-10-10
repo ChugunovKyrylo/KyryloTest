@@ -1,22 +1,28 @@
 package com.kyrylo.gifs.ui.grid
 
 import android.os.Build.VERSION.SDK_INT
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -38,54 +45,67 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.kyrylo.gifs.R
 import com.kyrylo.gifs.ui.models.GifModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 @Composable
 fun GridScreen(onGifClicked: (GifModel) -> Unit) {
     val viewmodel: GridViewModel = hiltViewModel()
     val state by viewmodel.state.collectAsState()
-
-    when (val currentState = state) {
-        else -> {
-            GridStateScreen(
-                state = currentState,
-                onChangeQuery = viewmodel::onChangeQuery,
+    val isEmptyGifs by remember(state.isEmptyGifs()) {
+        derivedStateOf { state.isEmptyGifs() }
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        GridTextField(
+            q = state.query,
+            onChangeQuery = viewmodel::onChangeQuery
+        )
+        if (isEmptyGifs.not()) {
+            Spacer(Modifier.height(10.dp))
+            GifListView(
+                state = state,
                 onRequestPaging = viewmodel::requestPaging,
                 onGifClicked = onGifClicked
             )
         }
     }
+
+
 }
 
 @Composable
-private fun GridStateScreen(
-    state: GridState,
-    onChangeQuery: (String) -> Unit,
-    onRequestPaging: () -> Unit,
-    onGifClicked: (GifModel) -> Unit
-) {
-    var query: String by remember(state.query) {
-        mutableStateOf(state.query)
+private fun GridTextField(q: String, onChangeQuery: (String) -> Unit) {
+    var query: String by remember(q) {
+        mutableStateOf(q)
     }
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        TextField(
-            value = query,
-            onValueChange = {
-                query = it
-                onChangeQuery(it)
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-        when {
-            state.isEmptyGifs() -> EmptyGifsView()
-            else -> GifListView(
-                state = state,
-                onRequestPaging = onRequestPaging,
-                onGifClicked = onGifClicked
+    OutlinedTextField(
+        value = query,
+        placeholder = {
+            Text(text = "smile")
+        },
+        onValueChange = {
+            query = it
+            onChangeQuery(it)
+        },
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            cursorColor = Color.Transparent
+        ),
+        modifier = Modifier
+            .fillMaxWidth(0.8f)
+            .height(60.dp)
+            .background(
+                color = Color.LightGray,
+                shape = RoundedCornerShape(20.dp)
             )
-        }
-    }
+    )
 }
 
 @Composable
@@ -95,32 +115,44 @@ private fun GifListView(
     onGifClicked: (GifModel) -> Unit
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.FixedSize(200.dp),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        itemsIndexed(items = state.gifs, key = { index, gif -> gif.order }) { index, item ->
+        itemsIndexed(items = state.gifs, key = { index, gif -> gif.getKey() }) { index, item ->
             if (index >= state.gifs.lastIndex - state.itemsToPaging) {
                 onRequestPaging()
             }
-            GifItemView(item, onGifClicked)
+            GifItemView(
+                item = item,
+                modifier = Modifier.clickable { onGifClicked(item) }
+            )
         }
-        if (state.isProcessPaging) {
+        if (state.error) {
             item(span = { GridItemSpan(2) }) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(200.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    CircularProgressIndicator()
+                    Text(
+                        text = "Error",
+                        fontSize = 32.sp,
+                        color = Color.Red
+                    )
                 }
+            }
+        }
+        if (state.isProcessPaging) {
+            item(span = { GridItemSpan(2) }) {
+                AnimatedLoadingText()
             }
         }
     }
 }
 
 @Composable
-private fun GifItemView(item: GifModel, onGifClicked: (GifModel) -> Unit) {
+fun GifItemView(item: GifModel, modifier: Modifier = Modifier) {
     val imageUrl by remember {
         mutableStateOf(item.imageUrl)
     }
@@ -138,8 +170,8 @@ private fun GifItemView(item: GifModel, onGifClicked: (GifModel) -> Unit) {
     val request = remember {
         ImageRequest.Builder(context)
             .data(imageUrl)
-            .crossfade(true)
             .memoryCachePolicy(CachePolicy.ENABLED)
+            .crossfade(true)
             .build()
     }
     AsyncImage(
@@ -148,22 +180,29 @@ private fun GifItemView(item: GifModel, onGifClicked: (GifModel) -> Unit) {
         placeholder = painterResource(R.drawable.placeholder_gif_loading),
         imageLoader = loader,
         contentDescription = null,
-        modifier = Modifier
-            .size(200.dp)
-            .clickable { onGifClicked(item) }
+        contentScale = ContentScale.Crop,
+        modifier = modifier.size(200.dp)
     )
 }
 
 @Composable
-private fun EmptyGifsView() {
+private fun AnimatedLoadingText() {
+    var points by remember { mutableStateOf(".") }
+    LaunchedEffect(9) {
+        while (isActive) {
+            var p = "${points}."
+            if (p == "....") p = "."
+            points = p
+            delay(660)
+        }
+    }
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "There are no any searched gif",
-            fontSize = 30.sp,
-            color = Color.Black
+            text = "Loading${points}",
+            fontSize = 24.sp
         )
     }
 }

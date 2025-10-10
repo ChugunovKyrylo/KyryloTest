@@ -13,6 +13,6 @@ data class GridState(
     val errorMessage: String? = ""
 ) {
 
-    fun isEmptyGifs() = gifs.isEmpty() && isProcessPaging.not()
+    fun isEmptyGifs() = gifs.isEmpty() && isProcessPaging.not() && error.not()
 
 }
