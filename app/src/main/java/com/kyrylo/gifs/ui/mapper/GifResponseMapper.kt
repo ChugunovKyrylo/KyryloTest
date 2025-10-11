@@ -15,7 +15,7 @@ class GifResponseMapper {
         return GifModel(
             user = mapUser(response?.user),
             title = response?.title ?: "",
-            imageUrl = response?.images?.fixedHeight?.url ?: "",
+            imageUrl = response?.images?.fixedHeightSmall?.url ?: "",
             description = response?.altText ?: "",
             source = response?.source ?: "",
             order = order,

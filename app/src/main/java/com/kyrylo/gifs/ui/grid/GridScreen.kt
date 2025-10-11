@@ -1,12 +1,19 @@
 package com.kyrylo.gifs.ui.grid
 
 import android.os.Build.VERSION.SDK_INT
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,11 +23,11 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -45,8 +52,6 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.kyrylo.gifs.R
 import com.kyrylo.gifs.ui.models.GifModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 
 @Composable
 fun GridScreen(onGifClicked: (GifModel) -> Unit) {
@@ -55,26 +60,49 @@ fun GridScreen(onGifClicked: (GifModel) -> Unit) {
     val isEmptyGifs by remember(state.isEmptyGifs()) {
         derivedStateOf { state.isEmptyGifs() }
     }
+    val animatedGridWeight by animateFloatAsState(
+        if (isEmptyGifs) 0f else 1f,
+        animationSpec = tween(300, easing = LinearEasing)
+    )
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxSize()
     ) {
+        AnimatedVisibility(
+            visible = isEmptyGifs,
+            enter = fadeIn(tween(300, easing = LinearEasing)),
+            exit = fadeOut(tween(300, easing = LinearEasing))
+        ) {
+            Column(
+                modifier = Modifier
+            ) {
+                Text(
+                    text = "Enter a searching key",
+                    fontSize = 24.sp,
+                    color = Color.Black
+                )
+                Spacer(Modifier.height(10.dp))
+            }
+        }
         GridTextField(
             q = state.query,
             onChangeQuery = viewmodel::onChangeQuery
         )
-        if (isEmptyGifs.not()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(animatedGridWeight)
+        ) {
             Spacer(Modifier.height(10.dp))
             GifListView(
                 state = state,
                 onRequestPaging = viewmodel::requestPaging,
-                onGifClicked = onGifClicked
+                onGifClicked = onGifClicked,
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
-
-
 }
 
 @Composable
@@ -112,13 +140,14 @@ private fun GridTextField(q: String, onChangeQuery: (String) -> Unit) {
 private fun GifListView(
     state: GridState,
     onRequestPaging: () -> Unit,
-    onGifClicked: (GifModel) -> Unit
+    onGifClicked: (GifModel) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
-        columns = GridCells.FixedSize(200.dp),
+        columns = GridCells.FixedSize(100.dp),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         itemsIndexed(items = state.gifs, key = { index, gif -> gif.getKey() }) { index, item ->
             if (index >= state.gifs.lastIndex - state.itemsToPaging) {
@@ -129,23 +158,9 @@ private fun GifListView(
                 modifier = Modifier.clickable { onGifClicked(item) }
             )
         }
-        if (state.error) {
-            item(span = { GridItemSpan(2) }) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Error",
-                        fontSize = 32.sp,
-                        color = Color.Red
-                    )
-                }
-            }
-        }
         if (state.isProcessPaging) {
             item(span = { GridItemSpan(2) }) {
-                AnimatedLoadingText()
+                AnimatedLoadingItem()
             }
         }
     }
@@ -181,28 +196,16 @@ fun GifItemView(item: GifModel, modifier: Modifier = Modifier) {
         imageLoader = loader,
         contentDescription = null,
         contentScale = ContentScale.Crop,
-        modifier = modifier.size(200.dp)
+        modifier = modifier.size(100.dp)
     )
 }
 
 @Composable
-private fun AnimatedLoadingText() {
-    var points by remember { mutableStateOf(".") }
-    LaunchedEffect(9) {
-        while (isActive) {
-            var p = "${points}."
-            if (p == "....") p = "."
-            points = p
-            delay(660)
-        }
-    }
+private fun AnimatedLoadingItem() {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = "Loading${points}",
-            fontSize = 24.sp
-        )
+        CircularProgressIndicator()
     }
 }

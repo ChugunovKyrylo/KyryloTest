@@ -1,5 +1,6 @@
 package com.kyrylo.gifs.ui.grid
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kyrylo.gifs.domain.repository.GifsRepository

@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-10-10T13:08:14.908439520Z">
+        <DropdownSelection timestamp="2025-10-11T11:31:43.172407862Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=/home/kyrylo/.android/avd/Medium_Phone_2.avd" />

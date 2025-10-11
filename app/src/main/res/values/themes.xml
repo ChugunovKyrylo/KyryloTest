@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="Theme.KyryloTestSplash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.KyryloTest</item>
+        <item name="windowSplashScreenBackground">@color/black</item>
+    </style>
+
     <style name="Theme.KyryloTest" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
