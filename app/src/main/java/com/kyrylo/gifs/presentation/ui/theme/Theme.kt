@@ -1,4 +1,4 @@
-package com.kyrylo.gifs.ui.theme
+package com.kyrylo.gifs.presentation.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

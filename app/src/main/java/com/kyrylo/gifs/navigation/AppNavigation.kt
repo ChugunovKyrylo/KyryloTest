@@ -45,7 +45,9 @@ fun AppNavigation(
             val gifModel =
                 controller.previousBackStackEntry?.savedStateHandle?.get<GifModel>("gifModel")
             DetailScreen(gifModel) {
-                controller.popBackStack()
+                if(controller.currentDestination?.route == "details"){
+                    controller.popBackStack()
+                }
             }
         }
     }

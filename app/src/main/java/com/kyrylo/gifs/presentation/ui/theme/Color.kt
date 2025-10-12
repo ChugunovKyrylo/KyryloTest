@@ -1,4 +1,4 @@
-package com.kyrylo.gifs.ui.theme
+package com.kyrylo.gifs.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

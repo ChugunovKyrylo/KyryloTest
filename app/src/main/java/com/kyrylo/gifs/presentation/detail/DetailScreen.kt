@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -34,7 +37,9 @@ import com.kyrylo.gifs.R
 import com.kyrylo.gifs.presentation.grid.GifItemView
 import com.kyrylo.gifs.presentation.models.GifModel
 import com.kyrylo.gifs.presentation.models.UserModel
-import com.kyrylo.gifs.ui.theme.AppTypography
+import com.kyrylo.gifs.presentation.ui.theme.AppTypography
+import com.kyrylo.gifs.presentation.ui.theme.errorLight
+import com.kyrylo.gifs.presentation.ui.theme.onErrorLight
 
 @Composable
 fun DetailScreen(model: GifModel?, onBack: () -> Unit) {
@@ -47,7 +52,7 @@ fun DetailScreen(model: GifModel?, onBack: () -> Unit) {
     }
 
     when (model) {
-        null -> if (enableErrorScreen) ErrorDetailScreen()
+        null -> if (enableErrorScreen) ErrorDetailScreen(onBack)
         else -> DetailStateScreen(model)
     }
 }
@@ -243,15 +248,35 @@ private fun ListBlock(
 }
 
 @Composable
-private fun ErrorDetailScreen() {
-    Box(
-        contentAlignment = Alignment.Center,
+private fun ErrorDetailScreen(
+    onBack: () -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ) {
         Text(
             text = "Unexpected error",
             fontSize = 30.sp,
-            color = Color.Red
+            color = errorLight,
+            style = AppTypography.titleLarge
         )
+        Spacer(Modifier.height(26.dp))
+        TextButton(
+            onClick = onBack,
+            colors = ButtonColors(
+                containerColor = errorLight,
+                contentColor = onErrorLight,
+                disabledContainerColor = errorLight,
+                disabledContentColor = onErrorLight
+            ),
+            modifier = Modifier.width(200.dp)
+        ) {
+            Text(
+                text = "Back",
+                style = AppTypography.bodyLarge
+            )
+        }
     }
 }

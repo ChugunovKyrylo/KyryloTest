@@ -5,6 +5,13 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -18,9 +25,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.kyrylo.gifs.navigation.AppNavigation
-import com.kyrylo.gifs.ui.theme.AppTheme
+import com.kyrylo.gifs.presentation.ui.theme.AppTheme
+import com.kyrylo.gifs.presentation.ui.theme.errorContainerLight
+import com.kyrylo.gifs.presentation.ui.theme.errorLight
+import com.kyrylo.gifs.presentation.ui.theme.onErrorContainerLight
+import com.kyrylo.gifs.presentation.ui.theme.onErrorLight
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -53,18 +67,36 @@ private fun KyryloTestApp() {
             snackbarHost = {
                 SnackbarHost(hostState = snackBarHostState) { snackbarData ->
                     Snackbar(
-                        action = {
+                        modifier = Modifier.fillMaxWidth(0.9f).height(60.dp),
+                        containerColor = errorContainerLight,
+                        contentColor = onErrorContainerLight,
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = snackbarData.visuals.message
+                            )
                             TextButton(
+                                colors = ButtonColors(
+                                    containerColor = errorLight,
+                                    contentColor = onErrorLight,
+                                    disabledContainerColor = errorLight,
+                                    disabledContentColor = onErrorLight
+                                ),
                                 onClick = {
                                     Log.d("MainActivity", "retry clicked")
                                     snackbarData.dismiss()
                                 }
                             ) {
-                                Text(text = "Retry")
+                                Text(
+                                    text = "Retry",
+                                )
                             }
                         }
-                    ) {
-                        Text(snackbarData.visuals.message)
                     }
                 }
             }
@@ -78,7 +110,7 @@ private fun KyryloTestApp() {
                         Log.d("MainActivity", "launch snackbar")
                         scope.launch {
                             snackBarHostState.showSnackbar(
-                                message = "Error paging",
+                                message = "Gifs were not loaded",
                                 actionLabel = "Retry",
                                 duration = SnackbarDuration.Indefinite
                             )

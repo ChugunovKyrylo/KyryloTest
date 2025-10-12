@@ -53,6 +53,9 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.kyrylo.gifs.R
 import com.kyrylo.gifs.presentation.models.GifModel
+import com.kyrylo.gifs.presentation.shared.ShimmerAsyncImage
+import com.kyrylo.gifs.presentation.shared.shimmerEffect
+import com.kyrylo.gifs.presentation.ui.theme.primaryLight
 import kotlinx.coroutines.flow.map
 
 @Composable
@@ -103,7 +106,7 @@ fun GridScreen(
                 Text(
                     text = "Enter a searching key",
                     fontSize = 24.sp,
-                    color = Color.Black
+                    color = primaryLight
                 )
                 Spacer(Modifier.height(10.dp))
             }
@@ -142,20 +145,10 @@ private fun GridTextField(q: String, onChangeQuery: (String) -> Unit) {
             query = it
             onChangeQuery(it)
         },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            cursorColor = Color.Transparent
-        ),
+        shape = RoundedCornerShape(20.dp),
         modifier = Modifier
             .fillMaxWidth(0.8f)
             .height(60.dp)
-            .background(
-                color = Color.LightGray,
-                shape = RoundedCornerShape(20.dp)
-            )
     )
 }
 
@@ -199,32 +192,9 @@ fun GifItemView(item: GifModel, modifier: Modifier = Modifier) {
     val imageUrl by remember {
         mutableStateOf(item.imageUrl)
     }
-    val context = LocalContext.current
-    val loader = remember {
-        ImageLoader.Builder(context)
-            .components {
-                if (SDK_INT >= 28) {
-                    add(AnimatedImageDecoder.Factory())
-                } else {
-                    add(GifDecoder.Factory())
-                }
-            }.build()
-    }
-    val request = remember {
-        ImageRequest.Builder(context)
-            .data(imageUrl)
-            .memoryCachePolicy(CachePolicy.ENABLED)
-            .crossfade(true)
-            .build()
-    }
-    AsyncImage(
-        model = request,
-        error = painterResource(R.drawable.error_gif_loading),
-        placeholder = painterResource(R.drawable.placeholder_gif_loading),
-        imageLoader = loader,
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = modifier.size(100.dp)
+    ShimmerAsyncImage(
+        url = imageUrl,
+        modifier = modifier
     )
 }
 
