@@ -1,6 +1,6 @@
-package com.kyrylo.gifs.ui.grid
+package com.kyrylo.gifs.presentation.grid
 
-import com.kyrylo.gifs.ui.models.GifModel
+import com.kyrylo.gifs.presentation.models.GifModel
 
 data class GridState(
     val query: String = "",
@@ -10,7 +10,6 @@ data class GridState(
     val itemsToPaging: Int = 5,
     val gifs: List<GifModel> = emptyList(),
     val error: Boolean = false,
-    val errorMessage: String? = ""
 ) {
 
     fun isEmptyGifs() = gifs.isEmpty() && isProcessPaging.not() && error.not()

@@ -1,24 +1,23 @@
 package com.kyrylo.gifs.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.kyrylo.gifs.ui.detail.DetailScreen
-import com.kyrylo.gifs.ui.grid.GridScreen
-import com.kyrylo.gifs.ui.models.GifModel
+import com.kyrylo.gifs.presentation.detail.DetailScreen
+import com.kyrylo.gifs.presentation.grid.GridScreen
+import com.kyrylo.gifs.presentation.models.GifModel
 
 @Composable
-fun AppNavigation(paddingValues: PaddingValues) {
+fun AppNavigation(
+    paddingValues: PaddingValues,
+    onShowErrorSnackBar: () -> Unit,
+    retryLoadingGridPage: Boolean
+) {
     val controller = rememberNavController()
     NavHost(
         navController = controller,
@@ -28,12 +27,19 @@ fun AppNavigation(paddingValues: PaddingValues) {
             .padding(paddingValues)
     ) {
         composable("grid") {
-            GridScreen { gifModel ->
-                if (controller.currentDestination?.route == "grid") {
-                    controller.currentBackStackEntry?.savedStateHandle?.set("gifModel", gifModel)
-                    controller.navigate(route = "details")
-                }
-            }
+            GridScreen(
+                onGifClicked = { gifModel ->
+                    if (controller.currentDestination?.route == "grid") {
+                        controller.currentBackStackEntry?.savedStateHandle?.set(
+                            "gifModel",
+                            gifModel
+                        )
+                        controller.navigate(route = "details")
+                    }
+                },
+                onShowErrorPaging = onShowErrorSnackBar,
+                retryLoadingGridPage = retryLoadingGridPage
+            )
         }
         composable("details") {
             val gifModel =

@@ -1,6 +1,7 @@
-package com.kyrylo.gifs.ui.grid
+package com.kyrylo.gifs.presentation.grid
 
 import android.os.Build.VERSION.SDK_INT
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -19,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +28,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -51,10 +52,15 @@ import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.kyrylo.gifs.R
-import com.kyrylo.gifs.ui.models.GifModel
+import com.kyrylo.gifs.presentation.models.GifModel
+import kotlinx.coroutines.flow.map
 
 @Composable
-fun GridScreen(onGifClicked: (GifModel) -> Unit) {
+fun GridScreen(
+    onGifClicked: (GifModel) -> Unit,
+    onShowErrorPaging: () -> Unit,
+    retryLoadingGridPage: Boolean
+) {
     val viewmodel: GridViewModel = hiltViewModel()
     val state by viewmodel.state.collectAsState()
     val isEmptyGifs by remember(state.isEmptyGifs()) {
@@ -64,6 +70,23 @@ fun GridScreen(onGifClicked: (GifModel) -> Unit) {
         if (isEmptyGifs) 0f else 1f,
         animationSpec = tween(300, easing = LinearEasing)
     )
+
+    LaunchedEffect(retryLoadingGridPage) {
+        if (retryLoadingGridPage) {
+            Log.d("MainActivity", "retry paging")
+            viewmodel.onRetryPaging()
+        }
+    }
+
+    LaunchedEffect(0) {
+        viewmodel.state.map { it.error }.collect { error ->
+            if (error) {
+                Log.d("MainActivity", "retry requests")
+                onShowErrorPaging()
+            }
+        }
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -143,6 +166,11 @@ private fun GifListView(
     onGifClicked: (GifModel) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val showLoading by remember(state.isProcessPaging, state.error) {
+        derivedStateOf {
+            state.isProcessPaging && state.error.not()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.FixedSize(100.dp),
         horizontalArrangement = Arrangement.SpaceAround,
@@ -158,8 +186,8 @@ private fun GifListView(
                 modifier = Modifier.clickable { onGifClicked(item) }
             )
         }
-        if (state.isProcessPaging) {
-            item(span = { GridItemSpan(2) }) {
+        if (showLoading) {
+            item {
                 AnimatedLoadingItem()
             }
         }
@@ -204,7 +232,7 @@ fun GifItemView(item: GifModel, modifier: Modifier = Modifier) {
 private fun AnimatedLoadingItem() {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.size(100.dp)
     ) {
         CircularProgressIndicator()
     }

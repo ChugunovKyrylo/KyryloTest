@@ -1,10 +1,10 @@
-package com.kyrylo.gifs.ui.grid
+package com.kyrylo.gifs.presentation.grid
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kyrylo.gifs.domain.repository.GifsRepository
-import com.kyrylo.gifs.ui.mapper.GifResponseMapper
+import com.kyrylo.gifs.presentation.mapper.GifResponseMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,33 +33,54 @@ class GridViewModel @Inject constructor(
                 .debounce(400)
                 .distinctUntilChanged()
                 .collectLatest { q ->
-                    _state.value = _state.value.copy(currentPage = 0, gifs = emptyList())
+                    _state.update {
+                        it.copy(currentPage = 0, gifs = emptyList())
+                    }
                     loadQuery(q)
                 }
+        }
+    }
+
+    fun onRetryPaging() {
+        val state = _state.value
+        if (state.error.not() || state.isProcessPaging) return
+        val query = state.query
+        viewModelScope.launch {
+            loadQuery(query)
         }
     }
 
     fun requestPaging() {
         if (processPaging) return
         processPaging = true
+        if (_state.value.error) return
         viewModelScope.launch {
-            val state = _state.value
-            val query = state.query
-            val newCurrentPage = state.currentPage + 1
-            _state.value = state.copy(currentPage = newCurrentPage)
+            Log.d("MainActivity", "request Paging")
+            _state.update {
+                val newCurrentPage = it.currentPage + 1
+                it.copy(currentPage = newCurrentPage)
+            }
+            val query = _state.value.query
             loadQuery(query)
         }.invokeOnCompletion { processPaging = false }
     }
 
     fun onChangeQuery(q: String) {
-        _state.value = _state.value.copy(query = q)
+        _state.update {
+            it.copy(query = q)
+        }
     }
 
     private suspend fun loadQuery(query: String) {
         try {
-            _state.value = _state.value.copy(isProcessPaging = true)
+            Log.d("MainActivity", "load query entered")
+            _state.update {
+                it.copy(isProcessPaging = true, error = false)
+            }
             if (query.isEmpty()) {
-                _state.value = _state.value.copy(gifs = emptyList(), isProcessPaging = false)
+                _state.update {
+                    it.copy(gifs = emptyList(), isProcessPaging = false, error = false)
+                }
             } else {
                 val pageSize = _state.value.pageSize
                 val page = _state.value.currentPage
@@ -66,18 +88,23 @@ class GridViewModel @Inject constructor(
                 val response =
                     repository.getGifs(query = query, pageSize = pageSize, offset = offset)
                 val gridGifItemModels = gridGifResponsesMapper.map(response.data)
-                val newGifs = _state.value.gifs.toMutableList()
-                newGifs.addAll(gridGifItemModels)
-                _state.value = _state.value.copy(gifs = newGifs, isProcessPaging = false)
+                _state.update {
+                    val newGifs = it.gifs.toMutableList()
+                    newGifs.addAll(gridGifItemModels)
+                    it.copy(gifs = newGifs, isProcessPaging = false, error = false)
+                }
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
-            _state.value = _state.value.copy(
-                error = true,
-                errorMessage = e.message,
-                isProcessPaging = false
-            )
+        } catch (_: Exception) {
+            Log.d("MainActivity", "load query exit")
+            _state.update {
+                it.copy(
+                    error = true,
+                    isProcessPaging = false
+                )
+            }
+
         }
     }
 

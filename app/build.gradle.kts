@@ -69,6 +69,7 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:2.9.5")
     implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.9.3")
 
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")

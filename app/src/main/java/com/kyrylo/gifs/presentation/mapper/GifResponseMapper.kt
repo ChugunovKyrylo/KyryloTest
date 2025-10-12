@@ -1,9 +1,9 @@
-package com.kyrylo.gifs.ui.mapper
+package com.kyrylo.gifs.presentation.mapper
 
 import com.kyrylo.gifs.data.remote.GifResponse
 import com.kyrylo.gifs.data.remote.User
-import com.kyrylo.gifs.ui.models.GifModel
-import com.kyrylo.gifs.ui.models.UserModel
+import com.kyrylo.gifs.presentation.models.GifModel
+import com.kyrylo.gifs.presentation.models.UserModel
 
 class GifResponseMapper {
 

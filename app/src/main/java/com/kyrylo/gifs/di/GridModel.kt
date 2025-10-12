@@ -1,6 +1,6 @@
 package com.kyrylo.gifs.di
 
-import com.kyrylo.gifs.ui.mapper.GifResponseMapper
+import com.kyrylo.gifs.presentation.mapper.GifResponseMapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

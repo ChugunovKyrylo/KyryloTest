@@ -1,6 +1,6 @@
-package com.kyrylo.gifs.ui.detail
+package com.kyrylo.gifs.presentation.detail
 
-import com.kyrylo.gifs.ui.models.GifModel
+import com.kyrylo.gifs.presentation.models.GifModel
 
 class DetailState(
     val loading: Boolean = true,

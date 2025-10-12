@@ -1,4 +1,4 @@
-package com.kyrylo.gifs.ui.models
+package com.kyrylo.gifs.presentation.models
 
 class GifModel(
     val user: UserModel,

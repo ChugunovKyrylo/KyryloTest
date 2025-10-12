@@ -1,12 +1,14 @@
-package com.kyrylo.gifs.ui.detail
+package com.kyrylo.gifs.presentation.detail
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -24,12 +26,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.kyrylo.gifs.ui.grid.GifItemView
-import com.kyrylo.gifs.ui.models.GifModel
-import com.kyrylo.gifs.ui.models.UserModel
+import com.kyrylo.gifs.R
+import com.kyrylo.gifs.presentation.grid.GifItemView
+import com.kyrylo.gifs.presentation.models.GifModel
+import com.kyrylo.gifs.presentation.models.UserModel
+import com.kyrylo.gifs.ui.theme.AppTypography
 
 @Composable
 fun DetailScreen(model: GifModel?, onBack: () -> Unit) {
@@ -56,6 +61,7 @@ private fun DetailStateScreen(model: GifModel) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
+        ListHeader("GIF")
         ListBlock {
             DetailedGifView(item = model)
         }
@@ -68,6 +74,7 @@ private fun DetailStateScreen(model: GifModel) {
         ListBlock(horizontalAlignment = Alignment.Start) {
             IdentityGifView(id = model.id)
         }
+        ListHeader("USER")
         ListBlock {
             UserView(userModel = model.user)
         }
@@ -96,6 +103,8 @@ private fun ColumnScope.UserView(userModel: UserModel) {
     AsyncImage(
         model = userModel.avatarUrl,
         contentDescription = null,
+        error = painterResource(R.drawable.account_image),
+        placeholder = painterResource(R.drawable.account_image),
         contentScale = ContentScale.Crop,
         modifier = Modifier
             .size(140.dp)
@@ -103,34 +112,29 @@ private fun ColumnScope.UserView(userModel: UserModel) {
     )
     Text(
         text = actualDisplayedName,
-        fontSize = 24.sp,
-        color = Color.Black
+        style = AppTypography.bodyLarge
     )
 
     Text(
         text = "Profile Url:",
-        fontSize = 24.sp,
-        color = Color.Black,
+        style = AppTypography.bodyLarge,
         modifier = Modifier.align(Alignment.Start)
     )
     Text(
         text = actualProfileUrl,
-        fontSize = 20.sp,
-        color = Color.Black,
+        style = AppTypography.bodyMedium,
         modifier = Modifier.align(Alignment.Start)
     )
 
     Text(
         text = "Description:",
-        fontSize = 24.sp,
-        color = Color.Black,
+        style = AppTypography.bodyLarge,
         modifier = Modifier.align(Alignment.Start)
     )
 
     Text(
         text = actualDescription,
-        fontSize = 20.sp,
-        color = Color.Black,
+        style = AppTypography.bodyMedium,
         modifier = Modifier.align(Alignment.Start)
     )
 
@@ -145,13 +149,11 @@ private fun IdentityGifView(id: String) {
     }
     Text(
         text = "ID:",
-        fontSize = 24.sp,
-        color = Color.Black,
+        style = AppTypography.bodyLarge
     )
     Text(
         text = actualItemIdentity,
-        fontSize = 20.sp,
-        color = Color.Black
+        style = AppTypography.bodyMedium
     )
 }
 
@@ -164,13 +166,11 @@ private fun SourceGifView(source: String) {
     }
     Text(
         text = "Source:",
-        fontSize = 24.sp,
-        color = Color.Black,
+        style = AppTypography.bodyLarge
     )
     Text(
         text = actualItemSource,
-        fontSize = 20.sp,
-        color = Color.Black
+        style = AppTypography.bodyMedium
     )
 }
 
@@ -183,13 +183,11 @@ private fun DescriptionGifView(description: String) {
     }
     Text(
         text = "Description:",
-        fontSize = 24.sp,
-        color = Color.Black,
+        style = AppTypography.bodyLarge
     )
     Text(
         text = actualItemDescription,
-        fontSize = 20.sp,
-        color = Color.Black
+        style = AppTypography.bodyMedium
     )
 }
 
@@ -202,12 +200,28 @@ private fun DetailedGifView(
             item.title.ifEmpty { "Unknown" }
         }
     }
-    GifItemView(item)
+    GifItemView(item, modifier = Modifier.size(200.dp))
     Text(
         text = actualItemTitle,
-        fontSize = 24.sp,
-        color = Color.Black
+        style = AppTypography.bodyLarge
     )
+}
+
+@Composable
+private fun ListHeader(text: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp)
+    ) {
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = text,
+            style = AppTypography.titleLarge
+        )
+        Spacer(Modifier.height(16.dp))
+    }
 }
 
 @Composable
