@@ -69,11 +69,10 @@ fun DetailScreen(model: GifModel?, onBack: () -> Unit) {
 @Composable
 private fun DetailStateScreen(model: GifModel, onBack: () -> Unit) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp, alignment = Alignment.CenterVertically),
+        verticalArrangement = Arrangement.spacedBy(24.dp, alignment = Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
     ) {
         ListHeader {
             Box(
@@ -98,26 +97,33 @@ private fun DetailStateScreen(model: GifModel, onBack: () -> Unit) {
                 )
             }
         }
-        ListBlock {
-            DetailedGifView(item = model)
-        }
-        ListBlock(horizontalAlignment = Alignment.Start) {
-            DescriptionGifView(description = model.description)
-        }
-        ListBlock(horizontalAlignment = Alignment.Start) {
-            SourceGifView(source = model.source)
-        }
-        ListBlock(horizontalAlignment = Alignment.Start) {
-            IdentityGifView(id = model.id)
-        }
-        ListHeader {
-            Text(
-                text = stringResource(R.string.user_header_caps),
-                style = AppTypography.titleLarge
-            )
-        }
-        ListBlock {
-            UserView(userModel = model.user)
+        Column(
+            modifier = Modifier.fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp, alignment = Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            ListBlock {
+                DetailedGifView(item = model)
+            }
+            ListBlock(horizontalAlignment = Alignment.Start) {
+                DescriptionGifView(description = model.description)
+            }
+            ListBlock(horizontalAlignment = Alignment.Start) {
+                SourceGifView(source = model.source)
+            }
+            ListBlock(horizontalAlignment = Alignment.Start) {
+                IdentityGifView(id = model.id)
+            }
+            ListHeader {
+                Text(
+                    text = stringResource(R.string.user_header_caps),
+                    style = AppTypography.titleMedium
+                )
+            }
+            ListBlock {
+                UserView(userModel = model.user)
+            }
         }
     }
 }

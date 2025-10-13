@@ -69,21 +69,9 @@ private fun KyryloTestApp() {
             snackbarHost = {
                 SnackbarHost(hostState = snackBarHostState) { snackbarData ->
                     Snackbar(
-                        modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .height(60.dp),
                         containerColor = errorContainerLight,
                         contentColor = onErrorContainerLight,
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = snackbarData.visuals.message
-                            )
+                        action = {
                             TextButton(
                                 colors = ButtonColors(
                                     containerColor = errorLight,
@@ -92,7 +80,7 @@ private fun KyryloTestApp() {
                                     disabledContentColor = onErrorLight
                                 ),
                                 onClick = {
-                                    Log.d("MainActivity", "retry clicked")
+                                    Log.d("MainActivity", "retry clicked ${snackbarData.hashCode()}")
                                     snackbarData.dismiss()
                                 }
                             ) {
@@ -100,7 +88,12 @@ private fun KyryloTestApp() {
                                     text = stringResource(R.string.retry),
                                 )
                             }
-                        }
+                        },
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Text(
+                            text = snackbarData.visuals.message
+                        )
                     }
                 }
             }

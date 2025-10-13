@@ -1,7 +1,9 @@
 package com.kyrylo.gifs.data.remote
 
+import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 
+@Keep
 data class GiphyApiResponse(
     @SerializedName("data")
     val data: List<GifResponse>?,
@@ -13,6 +15,7 @@ data class GiphyApiResponse(
     val pagination: Pagination?
 )
 
+@Keep
 data class Meta(
     @SerializedName("status")
     val status: Int?,
@@ -24,6 +27,7 @@ data class Meta(
     val responseId: String?
 )
 
+@Keep
 data class Pagination(
     @SerializedName("total_count")
     val totalCount: Int?,
@@ -35,6 +39,7 @@ data class Pagination(
     val offset: Int?
 )
 
+@Keep
 data class GifResponse(
     val type: String?,
     val id: String?,
@@ -62,6 +67,7 @@ data class GifResponse(
     @SerializedName("is_low_contrast") val isLowContrast: Boolean?
 )
 
+@Keep
 data class Images(
     @SerializedName("original")
     val original: GifImage?,
@@ -85,6 +91,7 @@ data class Images(
     val fixedWidthSmall: GifImage?
 )
 
+@Keep
 data class GifImage(
     val height: String?,
     val width: String?,
@@ -98,16 +105,19 @@ data class GifImage(
     val hash: String?
 )
 
+@Keep
 data class Analytics(
     val onload: AnalyticsEvent?,
     val onclick: AnalyticsEvent?,
     val onsent: AnalyticsEvent?
 )
 
+@Keep
 data class AnalyticsEvent(
     val url: String?
 )
 
+@Keep
 data class User(
     @SerializedName("avatar_url")
     val avatarUrl: String?,
