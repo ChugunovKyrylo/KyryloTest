@@ -28,7 +28,7 @@ fun Modifier.shimmerEffect(isActive: Boolean): Modifier = composed {
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
-        ), label = "ShimmerTranslate"
+        )
     )
     if (isActive) {
         this

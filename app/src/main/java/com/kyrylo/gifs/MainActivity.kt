@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +26,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.kyrylo.gifs.navigation.AppNavigation
@@ -53,6 +54,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun KyryloTestApp() {
     AppTheme {
+        val context = LocalContext.current
         var snackBarShown by remember {
             mutableStateOf(false)
         }
@@ -67,7 +69,9 @@ private fun KyryloTestApp() {
             snackbarHost = {
                 SnackbarHost(hostState = snackBarHostState) { snackbarData ->
                     Snackbar(
-                        modifier = Modifier.fillMaxWidth(0.9f).height(60.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .height(60.dp),
                         containerColor = errorContainerLight,
                         contentColor = onErrorContainerLight,
                         shape = RoundedCornerShape(20.dp)
@@ -93,7 +97,7 @@ private fun KyryloTestApp() {
                                 }
                             ) {
                                 Text(
-                                    text = "Retry",
+                                    text = stringResource(R.string.retry),
                                 )
                             }
                         }
@@ -110,8 +114,8 @@ private fun KyryloTestApp() {
                         Log.d("MainActivity", "launch snackbar")
                         scope.launch {
                             snackBarHostState.showSnackbar(
-                                message = "Gifs were not loaded",
-                                actionLabel = "Retry",
+                                message = context.getString(R.string.gifs_were_not_loaded),
+                                actionLabel = context.getString(R.string.retry),
                                 duration = SnackbarDuration.Indefinite
                             )
                             retryLoadingGridPage = true

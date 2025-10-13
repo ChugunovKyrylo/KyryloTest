@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">KyryloTest</string>
+    <string name="back">Back</string>
+    <string name="unexpected_error">Unexpected error</string>
+    <string name="unknown">Unknown</string>
+    <string name="description_colon">Description:</string>
+    <string name="gif_image">Gif image</string>
+    <string name="source_colon">Source:</string>
+    <string name="id_colon">ID:</string>
+    <string name="profile_url_colon">Profile Url:</string>
+    <string name="user_header_caps">USER</string>
+    <string name="gif_header_caps">GIF</string>
+    <string name="smile">smile</string>
+    <string name="enter_a_searching_key">Enter a searching key</string>
+    <string name="retry">Retry</string>
+    <string name="gifs_were_not_loaded">Gifs were not loaded</string>
 </resources>

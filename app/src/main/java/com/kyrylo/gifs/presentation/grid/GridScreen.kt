@@ -1,6 +1,5 @@
 package com.kyrylo.gifs.presentation.grid
 
-import android.os.Build.VERSION.SDK_INT
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
@@ -8,7 +7,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,7 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,24 +34,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil3.ImageLoader
-import coil3.compose.AsyncImage
-import coil3.gif.AnimatedImageDecoder
-import coil3.gif.GifDecoder
-import coil3.request.CachePolicy
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.kyrylo.gifs.R
 import com.kyrylo.gifs.presentation.models.GifModel
 import com.kyrylo.gifs.presentation.shared.ShimmerAsyncImage
-import com.kyrylo.gifs.presentation.shared.shimmerEffect
 import com.kyrylo.gifs.presentation.ui.theme.primaryLight
 import kotlinx.coroutines.flow.map
 
@@ -104,7 +90,7 @@ fun GridScreen(
                 modifier = Modifier
             ) {
                 Text(
-                    text = "Enter a searching key",
+                    text = stringResource(R.string.enter_a_searching_key),
                     fontSize = 24.sp,
                     color = primaryLight
                 )
@@ -139,7 +125,7 @@ private fun GridTextField(q: String, onChangeQuery: (String) -> Unit) {
     OutlinedTextField(
         value = query,
         placeholder = {
-            Text(text = "smile")
+            Text(text = stringResource(R.string.smile))
         },
         onValueChange = {
             query = it

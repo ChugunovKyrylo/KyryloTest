@@ -51,7 +51,8 @@ fun ShimmerAsyncImage(url: String, modifier: Modifier = Modifier) {
             isActiveShimmer = asyncImageState !is AsyncImagePainter.State.Success
         },
         contentScale = ContentScale.Crop,
-        modifier = modifier.size(100.dp)
+        modifier = modifier
+            .size(100.dp)
             .shimmerEffect(isActiveShimmer)
     )
 }

@@ -12,6 +12,12 @@ import com.kyrylo.gifs.presentation.detail.DetailScreen
 import com.kyrylo.gifs.presentation.grid.GridScreen
 import com.kyrylo.gifs.presentation.models.GifModel
 
+private const val GRID_ROUTE = "GRID"
+
+private const val DETAILS_ROUTE = "DETAILS"
+
+private const val ARG_GIF_MODEL = "gifModel"
+
 @Composable
 fun AppNavigation(
     paddingValues: PaddingValues,
@@ -21,31 +27,31 @@ fun AppNavigation(
     val controller = rememberNavController()
     NavHost(
         navController = controller,
-        startDestination = "grid",
+        startDestination = GRID_ROUTE,
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        composable("grid") {
+        composable(GRID_ROUTE) {
             GridScreen(
                 onGifClicked = { gifModel ->
-                    if (controller.currentDestination?.route == "grid") {
+                    if (controller.currentDestination?.route == GRID_ROUTE) {
                         controller.currentBackStackEntry?.savedStateHandle?.set(
-                            "gifModel",
+                            ARG_GIF_MODEL,
                             gifModel
                         )
-                        controller.navigate(route = "details")
+                        controller.navigate(route = DETAILS_ROUTE)
                     }
                 },
                 onShowErrorPaging = onShowErrorSnackBar,
                 retryLoadingGridPage = retryLoadingGridPage
             )
         }
-        composable("details") {
+        composable(DETAILS_ROUTE) {
             val gifModel =
-                controller.previousBackStackEntry?.savedStateHandle?.get<GifModel>("gifModel")
+                controller.previousBackStackEntry?.savedStateHandle?.get<GifModel>(ARG_GIF_MODEL)
             DetailScreen(gifModel) {
-                if(controller.currentDestination?.route == "details"){
+                if (controller.currentDestination?.route == DETAILS_ROUTE) {
                     controller.popBackStack()
                 }
             }
