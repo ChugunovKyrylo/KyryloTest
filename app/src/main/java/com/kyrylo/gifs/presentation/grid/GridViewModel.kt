@@ -34,7 +34,7 @@ class GridViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .collectLatest { q ->
                     _state.update {
-                        it.copy(currentPage = 0, gifs = emptyList())
+                        it.copy(currentPage = 0, gifs = emptyList(), overflow = false)
                     }
                     loadQuery(q)
                 }
@@ -43,7 +43,7 @@ class GridViewModel @Inject constructor(
 
     fun onRetryPaging() {
         val state = _state.value
-        if (state.error.not() || state.isProcessPaging) return
+        if (state.error.not() || state.isProcessPaging || state.overflow) return
         val query = state.query
         viewModelScope.launch {
             loadQuery(query)
@@ -51,9 +51,11 @@ class GridViewModel @Inject constructor(
     }
 
     fun requestPaging() {
+        Log.d("MainActivity", "request Paging (not started) processPaging $processPaging. error ${_state.value.error}. overflow ${_state.value.overflow}")
         if (processPaging) return
         processPaging = true
         if (_state.value.error) return
+        if(_state.value.overflow) return
         viewModelScope.launch {
             Log.d("MainActivity", "request Paging")
             _state.update {
@@ -62,7 +64,7 @@ class GridViewModel @Inject constructor(
             }
             val query = _state.value.query
             loadQuery(query)
-        }.invokeOnCompletion { processPaging = false }
+        }
     }
 
     fun onChangeQuery(q: String) {
@@ -88,10 +90,14 @@ class GridViewModel @Inject constructor(
                 val response =
                     repository.getGifs(query = query, pageSize = pageSize, offset = offset)
                 val gridGifItemModels = gridGifResponsesMapper.map(response.data)
+                val overflow =
+                    (response.pagination?.totalCount?.let { totalCount -> offset + pageSize >= totalCount }
+                        ?: response.data?.isEmpty()) == true
                 _state.update {
                     val newGifs = it.gifs.toMutableList()
                     newGifs.addAll(gridGifItemModels)
-                    it.copy(gifs = newGifs, isProcessPaging = false, error = false)
+                    Log.d("MainActivity", "request http made. List size ${newGifs.size}. overflow $overflow")
+                    it.copy(gifs = newGifs, isProcessPaging = false, error = false, overflow = overflow)
                 }
             }
         } catch (e: CancellationException) {
@@ -104,7 +110,8 @@ class GridViewModel @Inject constructor(
                     isProcessPaging = false
                 )
             }
-
+        } finally {
+            processPaging = false
         }
     }
 
