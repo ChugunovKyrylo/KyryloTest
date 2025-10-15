@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -34,6 +35,8 @@ class GridViewModel @Inject constructor(
     private val _state = MutableStateFlow(GridState())
     val state = _state.asStateFlow()
 
+    val errorFlow = MutableSharedFlow<Unit>()
+
     init {
         viewModelScope.launch {
             _state.map { it.query }
@@ -52,10 +55,10 @@ class GridViewModel @Inject constructor(
     }
 
     fun onRetryPaging() {
-        if (processPaging) return
-        processPaging = true
         val state = _state.value
         if (state.error.not() || state.isProcessPaging || state.overflow) return
+        if (processPaging) return
+        processPaging = true
         val query = state.query
         newRetryPagingJob {
             loadQuery(query)
@@ -126,9 +129,11 @@ class GridViewModel @Inject constructor(
                 }
             }
         } catch (e: CancellationException) {
+            Log.d("MainActivity", "load query cancelled")
             throw e
         } catch (_: Exception) {
             Log.d("MainActivity", "load query exit")
+            errorFlow.emit(Unit)
             _state.update {
                 it.copy(
                     error = true,

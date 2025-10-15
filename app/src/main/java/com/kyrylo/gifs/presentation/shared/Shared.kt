@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -32,7 +33,7 @@ fun Modifier.shimmerEffect(isActive: Boolean): Modifier = composed {
     )
     if (isActive) {
         this
-            .background(Color.Gray)
+            .background(Color.DarkGray.copy(alpha = 0.7f))
             .drawWithContent {
                 drawContent()
                 val brush = Brush.linearGradient(

@@ -19,10 +19,12 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,15 +57,26 @@ class MainActivity : ComponentActivity() {
 private fun KyryloTestApp() {
     AppTheme {
         val context = LocalContext.current
-        var snackBarShown by remember {
+        var snackBarShown by rememberSaveable {
             mutableStateOf(false)
         }
-        var retryLoadingGridPage by remember {
+        var retryLoadingGridPage by rememberSaveable {
             mutableStateOf(false)
         }
-        val scope = rememberCoroutineScope()
         val snackBarHostState = remember { SnackbarHostState() }
 
+
+        LaunchedEffect(snackBarShown) {
+            if(snackBarShown) {
+                retryLoadingGridPage = false
+                Log.d("MainActivity", "launch snackbar")
+                snackBarHostState.showSnackbar(
+                    message = context.getString(R.string.gifs_were_not_loaded),
+                    actionLabel = context.getString(R.string.retry),
+                    duration = SnackbarDuration.Indefinite
+                )
+            }
+        }
 
         Scaffold(
             snackbarHost = {
@@ -81,7 +94,9 @@ private fun KyryloTestApp() {
                                 ),
                                 onClick = {
                                     Log.d("MainActivity", "retry clicked ${snackbarData.hashCode()}")
+                                    snackBarShown = false
                                     snackbarData.dismiss()
+                                    retryLoadingGridPage = true
                                 }
                             ) {
                                 Text(
@@ -103,17 +118,6 @@ private fun KyryloTestApp() {
                 onShowErrorSnackBar = {
                     if (snackBarShown.not()) {
                         snackBarShown = true
-                        retryLoadingGridPage = false
-                        Log.d("MainActivity", "launch snackbar")
-                        scope.launch {
-                            snackBarHostState.showSnackbar(
-                                message = context.getString(R.string.gifs_were_not_loaded),
-                                actionLabel = context.getString(R.string.retry),
-                                duration = SnackbarDuration.Indefinite
-                            )
-                            retryLoadingGridPage = true
-                            snackBarShown = false
-                        }
                     }
                 },
                 retryLoadingGridPage = retryLoadingGridPage
