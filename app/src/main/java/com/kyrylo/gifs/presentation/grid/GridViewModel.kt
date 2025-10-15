@@ -112,9 +112,6 @@ class GridViewModel @Inject constructor(
                 val pageSize = _state.value.pageSize
                 val page = _state.value.currentPage
                 val offset = page * pageSize
-                Log.d("My Test", "enter long funct")
-                delay(5000)
-                Log.d("My Test", "exit long funct")
                 val response =
                     repository.getGifs(query = query, pageSize = pageSize, offset = offset)
                 val gridGifItemModels = gridGifResponsesMapper.map(response.data)
