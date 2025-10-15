@@ -7,6 +7,10 @@ import com.kyrylo.gifs.domain.repository.GifsRepository
 import com.kyrylo.gifs.presentation.mapper.GifResponseMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -15,6 +19,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,6 +27,8 @@ class GridViewModel @Inject constructor(
     private val repository: GifsRepository,
     private val gridGifResponsesMapper: GifResponseMapper
 ) : ViewModel() {
+
+    private var retryPagingJob: Job? = null
     private var processPaging = false
 
     private val _state = MutableStateFlow(GridState())
@@ -30,9 +37,12 @@ class GridViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _state.map { it.query }
-                .debounce(400)
+                .debounce(1000)
                 .distinctUntilChanged()
                 .collectLatest { q ->
+                    withContext(Dispatchers.IO) {
+                        retryPagingJob?.cancelAndJoin()
+                    }
                     _state.update {
                         it.copy(currentPage = 0, gifs = emptyList(), overflow = false)
                     }
@@ -42,21 +52,26 @@ class GridViewModel @Inject constructor(
     }
 
     fun onRetryPaging() {
+        if (processPaging) return
+        processPaging = true
         val state = _state.value
         if (state.error.not() || state.isProcessPaging || state.overflow) return
         val query = state.query
-        viewModelScope.launch {
+        newRetryPagingJob {
             loadQuery(query)
         }
     }
 
     fun requestPaging() {
-        Log.d("MainActivity", "request Paging (not started) processPaging $processPaging. error ${_state.value.error}. overflow ${_state.value.overflow}")
+        Log.d(
+            "MainActivity",
+            "request Paging (not started) processPaging $processPaging. error ${_state.value.error}. overflow ${_state.value.overflow}"
+        )
+        if (_state.value.error) return
+        if (_state.value.overflow) return
         if (processPaging) return
         processPaging = true
-        if (_state.value.error) return
-        if(_state.value.overflow) return
-        viewModelScope.launch {
+        newRetryPagingJob {
             Log.d("MainActivity", "request Paging")
             _state.update {
                 val newCurrentPage = it.currentPage + 1
@@ -64,6 +79,16 @@ class GridViewModel @Inject constructor(
             }
             val query = _state.value.query
             loadQuery(query)
+        }
+    }
+
+    private fun newRetryPagingJob(onNewJob: suspend () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            retryPagingJob?.cancelAndJoin()
+        }.invokeOnCompletion {
+            retryPagingJob = viewModelScope.launch {
+                onNewJob()
+            }
         }
     }
 
@@ -87,6 +112,9 @@ class GridViewModel @Inject constructor(
                 val pageSize = _state.value.pageSize
                 val page = _state.value.currentPage
                 val offset = page * pageSize
+                Log.d("My Test", "enter long funct")
+                delay(5000)
+                Log.d("My Test", "exit long funct")
                 val response =
                     repository.getGifs(query = query, pageSize = pageSize, offset = offset)
                 val gridGifItemModels = gridGifResponsesMapper.map(response.data)
