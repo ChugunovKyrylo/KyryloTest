@@ -19,7 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -42,8 +43,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kyrylo.gifs.R
 import com.kyrylo.gifs.presentation.models.GifModel
 import com.kyrylo.gifs.presentation.shared.ShimmerAsyncImage
-import com.kyrylo.gifs.presentation.ui.theme.primaryLight
-import kotlinx.coroutines.flow.map
 
 @Composable
 fun GridScreen(
@@ -68,12 +67,10 @@ fun GridScreen(
         }
     }
 
-    LaunchedEffect(0) {
-        viewmodel.state.map { it.error }.collect { error ->
-            if (error) {
-                Log.d("MainActivity", "retry requests")
-                onShowErrorPaging()
-            }
+    LaunchedEffect(state.error) {
+        if(state.error) {
+            Log.d("MainActivity", "retry requests")
+            onShowErrorPaging()
         }
     }
 
@@ -93,7 +90,7 @@ fun GridScreen(
                 Text(
                     text = stringResource(R.string.enter_a_searching_key),
                     fontSize = 24.sp,
-                    color = primaryLight
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(Modifier.height(10.dp))
             }
@@ -151,16 +148,30 @@ private fun GifListView(
             state.isProcessPaging && state.error.not()
         }
     }
+    val lazyGridState = rememberLazyGridState()
+    val isSendRequest by remember(state.itemsToPaging, state.overflow) {
+        derivedStateOf {
+            val currentScrollPosition = lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val allItemsInListCount = lazyGridState.layoutInfo.totalItemsCount
+            val lastItemsListIndex = allItemsInListCount - 1
+            allItemsInListCount > 0 && currentScrollPosition >= lastItemsListIndex - state.itemsToPaging && state.overflow.not()
+        }
+    }
+    LaunchedEffect(isSendRequest) {
+        if(isSendRequest) {
+            Log.d("GridScreen", "onRequestPaging")
+            onRequestPaging()
+        }
+    }
+
     LazyVerticalGrid(
+        state = lazyGridState,
         columns = GridCells.FixedSize(100.dp),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = modifier
     ) {
-        itemsIndexed(items = state.gifs, key = { index, gif -> gif.getKey() }) { index, item ->
-            if (index >= state.gifs.lastIndex - state.itemsToPaging) {
-                onRequestPaging()
-            }
+        items(items = state.gifs, key = { gif -> gif.getKey() }) { item ->
             GifItemView(
                 item = item,
                 modifier = Modifier.clickable { onGifClicked(item) }
@@ -176,7 +187,7 @@ private fun GifListView(
 
 @Composable
 fun GifItemView(item: GifModel, modifier: Modifier = Modifier) {
-    val imageUrl by remember {
+    val imageUrl by remember(item.imageUrl) {
         mutableStateOf(item.imageUrl)
     }
     ShimmerAsyncImage(
