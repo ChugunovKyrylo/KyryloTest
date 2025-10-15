@@ -1,6 +1,5 @@
 package com.kyrylo.gifs.presentation.detail
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,14 +18,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,28 +44,7 @@ import com.kyrylo.gifs.presentation.ui.theme.errorLight
 import com.kyrylo.gifs.presentation.ui.theme.onErrorLight
 
 @Composable
-fun DetailScreen(model: GifModel?, onBack: () -> Unit) {
-    var enableErrorScreen by remember {
-        mutableStateOf(true)
-    }
-    BackHandler {
-        enableErrorScreen = false
-        onBack()
-    }
-
-    when (model) {
-        null -> if (enableErrorScreen) ErrorDetailScreen(onBack)
-        else -> DetailStateScreen(
-            model = model, onBack = {
-                enableErrorScreen = false
-                onBack()
-            }
-        )
-    }
-}
-
-@Composable
-private fun DetailStateScreen(model: GifModel, onBack: () -> Unit) {
+fun DetailScreen(model: GifModel, onBack: () -> Unit) {
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp, alignment = Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -92,7 +69,7 @@ private fun DetailStateScreen(model: GifModel, onBack: () -> Unit) {
                 )
                 Text(
                     text = stringResource(R.string.gif_header_caps),
-                    style = AppTypography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
@@ -118,7 +95,7 @@ private fun DetailStateScreen(model: GifModel, onBack: () -> Unit) {
             ListHeader {
                 Text(
                     text = stringResource(R.string.user_header_caps),
-                    style = AppTypography.titleMedium
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
             ListBlock {
@@ -131,21 +108,14 @@ private fun DetailStateScreen(model: GifModel, onBack: () -> Unit) {
 @Composable
 private fun ColumnScope.UserView(userModel: UserModel) {
     val context = LocalContext.current
-    val actualProfileUrl by remember {
-        derivedStateOf {
-            userModel.profileUrl.ifEmpty { context.getString(R.string.unknown) }
-        }
+    val actualProfileUrl = remember(userModel.profileUrl) {
+        userModel.profileUrl.ifEmpty { context.getString(R.string.unknown) }
     }
-    val actualDisplayedName by remember {
-        derivedStateOf {
-            userModel.displayName.ifEmpty { context.getString(R.string.unknown) }
-        }
+    val actualDisplayedName = remember(userModel.displayName) {
+        userModel.displayName.ifEmpty { context.getString(R.string.unknown) }
     }
-
-    val actualDescription by remember {
-        derivedStateOf {
-            userModel.description.ifEmpty { context.getString(R.string.unknown) }
-        }
+    val actualDescription = remember(userModel.description) {
+        userModel.description.ifEmpty { context.getString(R.string.unknown) }
     }
 
     AsyncImage(
@@ -160,29 +130,29 @@ private fun ColumnScope.UserView(userModel: UserModel) {
     )
     Text(
         text = actualDisplayedName,
-        style = AppTypography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge
     )
 
     Text(
         text = stringResource(R.string.profile_url_colon),
-        style = AppTypography.bodyLarge,
+        style = MaterialTheme.typography.bodyLarge,
         modifier = Modifier.align(Alignment.Start)
     )
     Text(
         text = actualProfileUrl,
-        style = AppTypography.bodyMedium,
+        style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier.align(Alignment.Start)
     )
 
     Text(
         text = stringResource(R.string.description_colon),
-        style = AppTypography.bodyLarge,
+        style = MaterialTheme.typography.bodyLarge,
         modifier = Modifier.align(Alignment.Start)
     )
 
     Text(
         text = actualDescription,
-        style = AppTypography.bodyMedium,
+        style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier.align(Alignment.Start)
     )
 
@@ -191,54 +161,48 @@ private fun ColumnScope.UserView(userModel: UserModel) {
 @Composable
 private fun IdentityGifView(id: String) {
     val context = LocalContext.current
-    val actualItemIdentity by remember {
-        derivedStateOf {
-            id.ifEmpty { context.getString(R.string.unknown) }
-        }
+    val actualItemIdentity = remember(id) {
+        id.ifEmpty { context.getString(R.string.unknown) }
     }
     Text(
         text = stringResource(R.string.id_colon),
-        style = AppTypography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge
     )
     Text(
         text = actualItemIdentity,
-        style = AppTypography.bodyMedium
+        style = MaterialTheme.typography.bodyMedium
     )
 }
 
 @Composable
 private fun SourceGifView(source: String) {
     val context = LocalContext.current
-    val actualItemSource by remember {
-        derivedStateOf {
-            source.ifEmpty { context.getString(R.string.unknown) }
-        }
+    val actualItemSource = remember(source) {
+        source.ifEmpty { context.getString(R.string.unknown) }
     }
     Text(
         text = stringResource(R.string.source_colon),
-        style = AppTypography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge
     )
     Text(
         text = actualItemSource,
-        style = AppTypography.bodyMedium
+        style = MaterialTheme.typography.bodyMedium
     )
 }
 
 @Composable
 private fun DescriptionGifView(description: String) {
     val context = LocalContext.current
-    val actualItemDescription by remember {
-        derivedStateOf {
-            description.ifEmpty { context.getString(R.string.gif_image) }
-        }
+    val actualItemDescription = remember(description) {
+        description.ifEmpty { context.getString(R.string.gif_image) }
     }
     Text(
         text = stringResource(R.string.description_colon),
-        style = AppTypography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge
     )
     Text(
         text = actualItemDescription,
-        style = AppTypography.bodyMedium
+        style = MaterialTheme.typography.bodyMedium
     )
 }
 
@@ -247,15 +211,13 @@ private fun DetailedGifView(
     item: GifModel
 ) {
     val context = LocalContext.current
-    val actualItemTitle by remember {
-        derivedStateOf {
-            item.title.ifEmpty { context.getString(R.string.unknown) }
-        }
+    val actualItemTitle = remember(item.title) {
+        item.title.ifEmpty { context.getString(R.string.unknown) }
     }
     GifItemView(item, modifier = Modifier.size(200.dp))
     Text(
         text = actualItemTitle,
-        style = AppTypography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge
     )
 }
 
@@ -288,39 +250,5 @@ private fun ListBlock(
             .padding(horizontal = 14.dp)
     ) {
         content()
-    }
-}
-
-@Composable
-private fun ErrorDetailScreen(
-    onBack: () -> Unit
-) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Text(
-            text = stringResource(R.string.unexpected_error),
-            fontSize = 30.sp,
-            color = errorLight,
-            style = AppTypography.titleLarge
-        )
-        Spacer(Modifier.height(26.dp))
-        TextButton(
-            onClick = onBack,
-            colors = ButtonColors(
-                containerColor = errorLight,
-                contentColor = onErrorLight,
-                disabledContainerColor = errorLight,
-                disabledContentColor = onErrorLight
-            ),
-            modifier = Modifier.width(200.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.back),
-                style = AppTypography.bodyLarge
-            )
-        }
     }
 }
