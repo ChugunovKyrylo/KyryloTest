@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kyrylo.gifs.domain.repository.GifsRepository
+import com.kyrylo.gifs.domain.usecases.GetGifsUseCase
 import com.kyrylo.gifs.presentation.mapper.GifResponseMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -25,7 +26,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GridViewModel @Inject constructor(
-    private val repository: GifsRepository,
+    private val getGifs: GetGifsUseCase,
     private val gridGifResponsesMapper: GifResponseMapper
 ) : ViewModel() {
 
@@ -116,7 +117,7 @@ class GridViewModel @Inject constructor(
                 val page = _state.value.currentPage
                 val offset = page * pageSize
                 val response =
-                    repository.getGifs(query = query, pageSize = pageSize, offset = offset)
+                    getGifs(query = query, pageSize = pageSize, offset = offset)
                 val gridGifItemModels = gridGifResponsesMapper.map(response.data)
                 val overflow =
                     (response.pagination?.totalCount?.let { totalCount -> offset + pageSize >= totalCount }

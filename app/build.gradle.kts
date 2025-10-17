@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,6 +8,16 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.secrets)
 }
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        load(file.inputStream())
+    }
+}
+
+val apiKey = localProperties.getProperty("API_KEY") ?: ""
+
 
 android {
     namespace = "com.kyrylo.gifs"
@@ -19,7 +31,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "API_KEY", "")
+        buildConfigField("String", "API_KEY", apiKey)
     }
 
     buildTypes {
@@ -80,5 +92,6 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.coil.gif)
+    testImplementation(kotlin("test"))
 
 }
