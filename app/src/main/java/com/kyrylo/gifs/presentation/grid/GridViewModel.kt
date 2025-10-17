@@ -63,7 +63,7 @@ class GridViewModel @Inject constructor(
                 _gridAction.emit(GridAction.CloseApp)
             }
         } else {
-            _state.value = _state.value.copy(query = "")
+            _state.update { it.copy(query = "") }
         }
     }
 
