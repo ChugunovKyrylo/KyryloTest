@@ -70,6 +70,7 @@ fun DetailScreen(model: GifModel, onBack: () -> Unit) {
                 Text(
                     text = stringResource(R.string.gif_header_caps),
                     style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
@@ -130,30 +131,35 @@ private fun ColumnScope.UserView(userModel: UserModel) {
     )
     Text(
         text = actualDisplayedName,
-        style = MaterialTheme.typography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.secondary
     )
 
     Text(
         text = stringResource(R.string.profile_url_colon),
         style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.align(Alignment.Start)
+        modifier = Modifier.align(Alignment.Start),
+        color = MaterialTheme.colorScheme.secondary
     )
     Text(
         text = actualProfileUrl,
         style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.align(Alignment.Start)
+        modifier = Modifier.align(Alignment.Start),
+        color = MaterialTheme.colorScheme.tertiary
     )
 
     Text(
         text = stringResource(R.string.description_colon),
         style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.align(Alignment.Start)
+        modifier = Modifier.align(Alignment.Start),
+        color = MaterialTheme.colorScheme.secondary
     )
 
     Text(
         text = actualDescription,
         style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.align(Alignment.Start)
+        modifier = Modifier.align(Alignment.Start),
+        color = MaterialTheme.colorScheme.tertiary
     )
 
 }
@@ -166,11 +172,13 @@ private fun IdentityGifView(id: String) {
     }
     Text(
         text = stringResource(R.string.id_colon),
-        style = MaterialTheme.typography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.secondary
     )
     Text(
         text = actualItemIdentity,
-        style = MaterialTheme.typography.bodyMedium
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.tertiary
     )
 }
 
@@ -182,11 +190,13 @@ private fun SourceGifView(source: String) {
     }
     Text(
         text = stringResource(R.string.source_colon),
-        style = MaterialTheme.typography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.secondary
     )
     Text(
         text = actualItemSource,
-        style = MaterialTheme.typography.bodyMedium
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.tertiary
     )
 }
 
@@ -198,11 +208,13 @@ private fun DescriptionGifView(description: String) {
     }
     Text(
         text = stringResource(R.string.description_colon),
-        style = MaterialTheme.typography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.secondary
     )
     Text(
         text = actualItemDescription,
-        style = MaterialTheme.typography.bodyMedium
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.tertiary
     )
 }
 
@@ -217,7 +229,8 @@ private fun DetailedGifView(
     GifItemView(item, modifier = Modifier.size(200.dp))
     Text(
         text = actualItemTitle,
-        style = MaterialTheme.typography.bodyLarge
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.secondary
     )
 }
 

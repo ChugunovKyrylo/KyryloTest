@@ -34,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -45,7 +44,6 @@ import com.kyrylo.gifs.R
 import com.kyrylo.gifs.presentation.models.GifModel
 import com.kyrylo.gifs.presentation.shared.ShimmerAsyncImage
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
 
 @Composable
 fun GridScreen(
@@ -71,7 +69,7 @@ fun GridScreen(
     }
 
     LaunchedEffect(0) {
-        viewmodel.errorFlow.collect {
+        viewmodel.errorFlow.debounce(1000).collect {
             onShowErrorPaging()
         }
     }
@@ -97,7 +95,7 @@ fun GridScreen(
                 Spacer(Modifier.height(10.dp))
             }
         }
-        GridTextField(
+        SearchTextField(
             q = state.query,
             onChangeQuery = viewmodel::onChangeQuery
         )
@@ -118,7 +116,7 @@ fun GridScreen(
 }
 
 @Composable
-private fun GridTextField(q: String, onChangeQuery: (String) -> Unit) {
+private fun SearchTextField(q: String, onChangeQuery: (String) -> Unit) {
     var query: String by remember(q) {
         mutableStateOf(q)
     }

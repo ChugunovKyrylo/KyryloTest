@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">KyryloTest</string>
+    <string name="app_name">Gifs Searcher</string>
     <string name="back">Back</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unknown">Unknown</string>
