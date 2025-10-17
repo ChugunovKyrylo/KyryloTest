@@ -45,9 +45,6 @@ class GridViewModel @Inject constructor(
                 .debounce(1000)
                 .distinctUntilChanged()
                 .collectLatest { q ->
-                    withContext(Dispatchers.IO) {
-                        retryPagingJob?.cancelAndJoin()
-                    }
                     _state.update {
                         it.copy(currentPage = 0, gifs = emptyList(), overflow = false)
                     }
