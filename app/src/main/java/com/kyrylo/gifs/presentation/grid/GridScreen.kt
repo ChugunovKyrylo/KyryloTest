@@ -1,6 +1,7 @@
 package com.kyrylo.gifs.presentation.grid
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -36,14 +37,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import com.kyrylo.gifs.MainActivity
 import com.kyrylo.gifs.R
 import com.kyrylo.gifs.presentation.models.GifModel
 import com.kyrylo.gifs.presentation.shared.ShimmerAsyncImage
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun GridScreen(
@@ -51,6 +59,9 @@ fun GridScreen(
     onShowErrorPaging: () -> Unit,
     retryLoadingGridPage: Boolean
 ) {
+
+    val activity = LocalContext.current as MainActivity
+
     val viewmodel: GridViewModel = hiltViewModel()
     val state by viewmodel.state.collectAsState()
     val isEmptyGifs by remember(state.isEmptyGifs()) {
@@ -61,6 +72,8 @@ fun GridScreen(
         animationSpec = tween(300, easing = LinearEasing)
     )
 
+    BackHandler { viewmodel.handleBackPressed() }
+
     LaunchedEffect(retryLoadingGridPage) {
         if (retryLoadingGridPage) {
             Log.d("MainActivity", "retry paging")
@@ -69,9 +82,14 @@ fun GridScreen(
     }
 
     LaunchedEffect(0) {
-        viewmodel.errorFlow.debounce(1000).collect {
-            onShowErrorPaging()
-        }
+        viewmodel.gridAction
+            .flowWithLifecycle(activity.lifecycle, Lifecycle.State.RESUMED)
+            .onEach { action ->
+                when (action) {
+                    GridAction.CloseApp -> activity.finish()
+                    GridAction.SendError -> onShowErrorPaging()
+                }
+            }.launchIn(activity.lifecycleScope)
     }
 
     Column(
@@ -151,14 +169,15 @@ private fun GifListView(
     val lazyGridState = rememberLazyGridState()
     val isSendRequest by remember(state.itemsToPaging, state.overflow) {
         derivedStateOf {
-            val currentScrollPosition = lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val currentScrollPosition =
+                lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
             val allItemsInListCount = lazyGridState.layoutInfo.totalItemsCount
             val lastItemsListIndex = allItemsInListCount - 1
             allItemsInListCount > 0 && currentScrollPosition >= lastItemsListIndex - state.itemsToPaging && state.overflow.not()
         }
     }
     LaunchedEffect(isSendRequest) {
-        if(isSendRequest) {
+        if (isSendRequest) {
             Log.d("GridScreen", "onRequestPaging")
             onRequestPaging()
         }

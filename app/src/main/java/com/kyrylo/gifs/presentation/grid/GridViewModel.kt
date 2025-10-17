@@ -3,7 +3,7 @@ package com.kyrylo.gifs.presentation.grid
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kyrylo.gifs.domain.repository.GifsRepository
+import com.kyrylo.gifs.data.remote.GiphyApiResponse
 import com.kyrylo.gifs.domain.usecases.GetGifsUseCase
 import com.kyrylo.gifs.presentation.mapper.GifResponseMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,7 +11,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +35,8 @@ class GridViewModel @Inject constructor(
     private val _state = MutableStateFlow(GridState())
     val state = _state.asStateFlow()
 
-    val errorFlow = MutableSharedFlow<Unit>()
+    private val _gridAction = MutableSharedFlow<GridAction>()
+    val gridAction = _gridAction
 
     init {
         viewModelScope.launch {
@@ -55,15 +55,24 @@ class GridViewModel @Inject constructor(
         }
     }
 
+    fun handleBackPressed() {
+        val state = _state.value
+        if(state.query.isEmpty()) {
+            viewModelScope.launch(Dispatchers.IO) {
+                _gridAction.emit(GridAction.CloseApp)
+            }
+        } else {
+            _state.value = _state.value.copy(query = "")
+        }
+    }
+
     fun onRetryPaging() {
         val state = _state.value
         if (state.error.not() || state.isProcessPaging || state.overflow) return
         if (processPaging) return
         processPaging = true
         val query = state.query
-        newRetryPagingJob {
-            loadQuery(query)
-        }
+        loadQuery(query)
     }
 
     fun requestPaging() {
@@ -75,15 +84,13 @@ class GridViewModel @Inject constructor(
         if (_state.value.overflow) return
         if (processPaging) return
         processPaging = true
-        newRetryPagingJob {
-            Log.d("MainActivity", "request Paging")
-            _state.update {
-                val newCurrentPage = it.currentPage + 1
-                it.copy(currentPage = newCurrentPage)
-            }
-            val query = _state.value.query
-            loadQuery(query)
+        Log.d("MainActivity", "request Paging")
+        _state.update {
+            val newCurrentPage = it.currentPage + 1
+            it.copy(currentPage = newCurrentPage)
         }
+        val query = _state.value.query
+        loadQuery(query)
     }
 
     private fun newRetryPagingJob(onNewJob: suspend () -> Unit) {
@@ -102,48 +109,67 @@ class GridViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadQuery(query: String) {
-        try {
-            Log.d("MainActivity", "load query entered")
-            _state.update {
-                it.copy(isProcessPaging = true, error = false)
-            }
-            if (query.isEmpty()) {
+    private fun loadQuery(query: String) {
+        newRetryPagingJob {
+            try {
+                Log.d("MainActivity", "load query entered")
                 _state.update {
-                    it.copy(gifs = emptyList(), isProcessPaging = false, error = false)
+                    it.copy(isProcessPaging = true, error = false)
                 }
-            } else {
-                val pageSize = _state.value.pageSize
-                val page = _state.value.currentPage
-                val offset = page * pageSize
-                val response =
-                    getGifs(query = query, pageSize = pageSize, offset = offset)
-                val gridGifItemModels = gridGifResponsesMapper.map(response.data)
-                val overflow =
-                    (response.pagination?.totalCount?.let { totalCount -> offset + pageSize >= totalCount }
-                        ?: response.data?.isEmpty()) == true
+                if (query.isEmpty()) {
+                    _state.update {
+                        it.copy(gifs = emptyList(), isProcessPaging = false, error = false)
+                    }
+                } else {
+                    val pageSize = _state.value.pageSize
+                    val page = _state.value.currentPage
+                    val offset = page * pageSize
+                    val response =
+                        getGifs(query = query, pageSize = pageSize, offset = offset)
+                    val gridGifItemModels = gridGifResponsesMapper.map(response.data)
+                    val overflow = isOverflowResponse(response, offset, pageSize)
+                    _state.update {
+                        val newGifs = it.gifs.toMutableList()
+                        newGifs.addAll(gridGifItemModels)
+                        Log.d(
+                            "MainActivity",
+                            "request http made. List size ${newGifs.size}. overflow $overflow"
+                        )
+                        it.copy(
+                            gifs = newGifs,
+                            isProcessPaging = false,
+                            error = false,
+                            overflow = overflow
+                        )
+                    }
+                }
+            } catch (e: CancellationException) {
+                Log.d("MainActivity", "load query cancelled")
+                throw e
+            } catch (_: Exception) {
+                Log.d("MainActivity", "load query exit")
                 _state.update {
-                    val newGifs = it.gifs.toMutableList()
-                    newGifs.addAll(gridGifItemModels)
-                    Log.d("MainActivity", "request http made. List size ${newGifs.size}. overflow $overflow")
-                    it.copy(gifs = newGifs, isProcessPaging = false, error = false, overflow = overflow)
+                    it.copy(
+                        error = true,
+                        isProcessPaging = false
+                    )
                 }
+                withContext(Dispatchers.IO) {
+
+                    _gridAction.emit(GridAction.SendError)
+                }
+            } finally {
+                processPaging = false
             }
-        } catch (e: CancellationException) {
-            Log.d("MainActivity", "load query cancelled")
-            throw e
-        } catch (_: Exception) {
-            Log.d("MainActivity", "load query exit")
-            errorFlow.emit(Unit)
-            _state.update {
-                it.copy(
-                    error = true,
-                    isProcessPaging = false
-                )
-            }
-        } finally {
-            processPaging = false
         }
     }
+
+    private fun isOverflowResponse(
+        response: GiphyApiResponse,
+        offset: Int,
+        pageSize: Int
+    ): Boolean =
+        (response.pagination?.totalCount?.let { totalCount -> offset + pageSize >= totalCount }
+            ?: response.data?.isEmpty()) == true
 
 }

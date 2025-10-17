@@ -49,7 +49,8 @@ fun AppNavigation(
         }
         composable(DETAILS_ROUTE) {
             val gifModel =
-                controller.previousBackStackEntry?.savedStateHandle?.get<GifModel>(ARG_GIF_MODEL) ?: return@composable
+                controller.previousBackStackEntry?.savedStateHandle?.get<GifModel>(ARG_GIF_MODEL)
+                    ?: return@composable
             DetailScreen(gifModel) {
                 if (controller.currentDestination?.route == DETAILS_ROUTE) {
                     controller.popBackStack()

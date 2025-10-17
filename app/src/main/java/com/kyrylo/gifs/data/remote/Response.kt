@@ -1,6 +1,5 @@
 package com.kyrylo.gifs.data.remote
 
-import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 
 data class GiphyApiResponse(

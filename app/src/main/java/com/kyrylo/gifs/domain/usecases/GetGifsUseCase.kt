@@ -9,10 +9,10 @@ class GetGifsUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(query: String, pageSize: Int, offset: Int): GiphyApiResponse {
-        if(query.isEmpty()) throw IllegalStateException()
-        if(pageSize <= 0) throw IllegalStateException()
-        if(offset < 0) throw IllegalStateException()
-       return gifsRepository.getGifs(query, pageSize, offset)
+        if (query.isEmpty()) throw IllegalStateException()
+        if (pageSize <= 0) throw IllegalStateException()
+        if (offset < 0) throw IllegalStateException()
+        return gifsRepository.getGifs(query, pageSize, offset)
     }
 
 }
