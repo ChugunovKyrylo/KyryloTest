@@ -4,8 +4,11 @@ import com.kyrylo.gifs.data.remote.GifResponse
 import com.kyrylo.gifs.data.remote.User
 import com.kyrylo.gifs.presentation.models.GifModel
 import com.kyrylo.gifs.presentation.models.UserModel
+import dagger.hilt.android.scopes.ViewModelScoped
+import javax.inject.Inject
 
-class GifResponseMapper {
+@ViewModelScoped
+class GifResponseMapper @Inject constructor() {
 
     fun map(responses: List<GifResponse>?): List<GifModel> {
         return responses?.mapIndexed { index, response -> map(response, index + 1) } ?: emptyList()
