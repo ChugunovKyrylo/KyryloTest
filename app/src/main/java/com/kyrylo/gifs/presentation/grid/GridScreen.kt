@@ -42,16 +42,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import com.kyrylo.gifs.MainActivity
 import com.kyrylo.gifs.R
 import com.kyrylo.gifs.presentation.models.GifModel
 import com.kyrylo.gifs.presentation.shared.ShimmerAsyncImage
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun GridScreen(
@@ -82,14 +76,12 @@ fun GridScreen(
     }
 
     LaunchedEffect(0) {
-        viewmodel.gridAction
-            .flowWithLifecycle(activity.lifecycle, Lifecycle.State.RESUMED)
-            .onEach { action ->
-                when (action) {
-                    GridAction.CloseApp -> activity.finish()
-                    GridAction.SendError -> onShowErrorPaging()
-                }
-            }.launchIn(activity.lifecycleScope)
+        viewmodel.gridAction.collect { action ->
+            when (action) {
+                GridAction.CloseApp -> activity.finish()
+                GridAction.SendError -> onShowErrorPaging()
+            }
+        }
     }
 
     Column(

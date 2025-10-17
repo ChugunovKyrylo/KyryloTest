@@ -11,6 +11,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -57,7 +58,7 @@ class GridViewModel @Inject constructor(
 
     fun handleBackPressed() {
         val state = _state.value
-        if(state.query.isEmpty()) {
+        if (state.query.isEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
                 _gridAction.emit(GridAction.CloseApp)
             }
@@ -155,7 +156,7 @@ class GridViewModel @Inject constructor(
                     )
                 }
                 withContext(Dispatchers.IO) {
-
+                    delay(1000)
                     _gridAction.emit(GridAction.SendError)
                 }
             } finally {
