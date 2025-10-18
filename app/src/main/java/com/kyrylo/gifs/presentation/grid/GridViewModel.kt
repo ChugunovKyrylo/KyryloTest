@@ -8,6 +8,7 @@ import com.kyrylo.gifs.domain.usecases.GetGifsUseCase
 import com.kyrylo.gifs.presentation.mapper.GifResponseMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
@@ -39,12 +40,17 @@ class GridViewModel @Inject constructor(
     private val _gridAction = MutableSharedFlow<GridAction>()
     val gridAction = _gridAction
 
+    private val exceptionHandler = CoroutineExceptionHandler { _, _ ->  }
+
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             _state.map { it.query }
                 .debounce(1000)
                 .distinctUntilChanged()
                 .collectLatest { q ->
+                    withContext(Dispatchers.IO) {
+                        retryPagingJob?.cancelAndJoin()
+                    }
                     _state.update {
                         it.copy(currentPage = 0, gifs = emptyList(), overflow = false)
                     }
@@ -56,7 +62,7 @@ class GridViewModel @Inject constructor(
     fun handleBackPressed() {
         val state = _state.value
         if (state.query.isEmpty()) {
-            viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch(Dispatchers.IO + exceptionHandler) {
                 _gridAction.emit(GridAction.CloseApp)
             }
         } else {
@@ -92,10 +98,10 @@ class GridViewModel @Inject constructor(
     }
 
     private fun newRetryPagingJob(onNewJob: suspend () -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO + exceptionHandler) {
             retryPagingJob?.cancelAndJoin()
         }.invokeOnCompletion {
-            retryPagingJob = viewModelScope.launch {
+            retryPagingJob = viewModelScope.launch(exceptionHandler) {
                 onNewJob()
             }
         }
