@@ -11,10 +11,10 @@ This app uses the [Giphy API](https://developers.giphy.com/docs/api/), which all
 
 ## Launch
 ### Requirements
-  - Min SDK - 24
+  - Min SDK - 26
   - Target SDK - 36
 ### Downloading
-  - You can launch the project by the link.
+  - You can launch the project by the [link](https://drive.google.com/file/d/1SfyS-miUQr3bvrh-_tHiDMYc6afT05Ny/view?usp=sharing).
 ### Clone the repository.
   Set up your API key:
    - Open the file `app/src/main/java/com/kyrylo/gifs/data/remote/ApiKeyInterceptor.kt`.
