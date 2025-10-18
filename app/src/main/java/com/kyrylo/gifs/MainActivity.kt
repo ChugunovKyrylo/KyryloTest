@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import coil3.imageLoader
 import com.kyrylo.gifs.navigation.AppNavigation
 import com.kyrylo.gifs.presentation.ui.theme.AppTheme
 import com.kyrylo.gifs.presentation.ui.theme.errorContainerLight
@@ -40,6 +41,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             KyryloTestApp()
+        }
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        clearImageLoaderCache()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        clearImageLoaderCache()
+    }
+
+    private fun clearImageLoaderCache() {
+        runCatching {
+            imageLoader.memoryCache?.clear()
         }
     }
 }
