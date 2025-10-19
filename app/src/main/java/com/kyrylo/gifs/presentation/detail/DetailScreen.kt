@@ -19,6 +19,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -104,14 +106,20 @@ fun DetailScreen(model: GifModel, onBack: () -> Unit) {
 @Composable
 private fun ColumnScope.UserView(userModel: UserModel) {
     val context = LocalContext.current
-    val actualProfileUrl = remember(userModel.profileUrl) {
-        userModel.profileUrl.ifEmpty { context.getString(R.string.unknown) }
+    val actualProfileUrl by remember(userModel.profileUrl) {
+        mutableStateOf(
+            userModel.profileUrl.ifEmpty { context.getString(R.string.unknown) }
+        )
     }
-    val actualDisplayedName = remember(userModel.displayName) {
-        userModel.displayName.ifEmpty { context.getString(R.string.unknown) }
+    val actualDisplayedName by remember(userModel.displayName) {
+        mutableStateOf(
+            userModel.displayName.ifEmpty { context.getString(R.string.unknown) }
+        )
     }
-    val actualDescription = remember(userModel.description) {
-        userModel.description.ifEmpty { context.getString(R.string.unknown) }
+    val actualDescription by remember(userModel.description) {
+        mutableStateOf(
+            userModel.description.ifEmpty { context.getString(R.string.unknown) }
+        )
     }
 
     AsyncImage(
@@ -162,8 +170,10 @@ private fun ColumnScope.UserView(userModel: UserModel) {
 @Composable
 private fun IdentityGifView(id: String) {
     val context = LocalContext.current
-    val actualItemIdentity = remember(id) {
-        id.ifEmpty { context.getString(R.string.unknown) }
+    val actualItemIdentity by remember(id) {
+        mutableStateOf(
+            id.ifEmpty { context.getString(R.string.unknown) }
+        )
     }
     Text(
         text = stringResource(R.string.id_colon),
@@ -180,8 +190,10 @@ private fun IdentityGifView(id: String) {
 @Composable
 private fun SourceGifView(source: String) {
     val context = LocalContext.current
-    val actualItemSource = remember(source) {
-        source.ifEmpty { context.getString(R.string.unknown) }
+    val actualItemSource by remember(source) {
+        mutableStateOf(
+            source.ifEmpty { context.getString(R.string.unknown) }
+        )
     }
     Text(
         text = stringResource(R.string.source_colon),
@@ -198,8 +210,10 @@ private fun SourceGifView(source: String) {
 @Composable
 private fun DescriptionGifView(description: String) {
     val context = LocalContext.current
-    val actualItemDescription = remember(description) {
-        description.ifEmpty { context.getString(R.string.gif_image) }
+    val actualItemDescription by remember(description) {
+        mutableStateOf(
+            description.ifEmpty { context.getString(R.string.gif_image) }
+        )
     }
     Text(
         text = stringResource(R.string.description_colon),
@@ -218,8 +232,10 @@ private fun DetailedGifView(
     item: GifModel
 ) {
     val context = LocalContext.current
-    val actualItemTitle = remember(item.title) {
-        item.title.ifEmpty { context.getString(R.string.unknown) }
+    val actualItemTitle by remember(item.title) {
+        mutableStateOf(
+            item.title.ifEmpty { context.getString(R.string.unknown) }
+        )
     }
     GifItemView(item, modifier = Modifier.size(200.dp))
     Text(
