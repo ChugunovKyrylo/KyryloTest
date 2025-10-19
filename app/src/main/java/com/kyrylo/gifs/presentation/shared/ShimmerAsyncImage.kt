@@ -33,12 +33,14 @@ fun ShimmerAsyncImage(url: String, modifier: Modifier = Modifier) {
                 }
             }.build()
     }
-    val request = remember {
-        ImageRequest.Builder(context)
-            .data(url)
-            .memoryCachePolicy(CachePolicy.ENABLED)
-            .crossfade(true)
-            .build()
+    val request by remember(url) {
+        mutableStateOf(
+            ImageRequest.Builder(context)
+                .data(url)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .crossfade(true)
+                .build()
+        )
     }
     var isActiveShimmer by remember {
         mutableStateOf(true)
