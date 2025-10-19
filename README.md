@@ -1,4 +1,4 @@
-# Gifs Searcher
+# Gifs Searcher (Android App)
 The app selects GIF animations based on your text input. Describe an emotion, situation, or thought — and get a matching GIF in return.
 
 ![](https://github.com/ChugunovKyrylo/KyryloTest/blob/master/screenshots/search_text_view.png)
